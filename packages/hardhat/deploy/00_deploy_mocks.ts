@@ -14,7 +14,7 @@ const deployMocks: DeployFunction = async () => {
       log: true,
     });
 
-    await deploy("MyNFT", {
+    await deploy("Ogre", {
       from: tokenHolder,
       log: true,
     });
