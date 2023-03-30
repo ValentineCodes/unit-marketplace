@@ -10,9 +10,8 @@ import { Contract, ContractCodeStatus, ContractName, contracts } from "~~/utils/
  */
 export const useDeployedContractInfo = <TContractName extends ContractName>(contractName: TContractName) => {
   const isMounted = useIsMounted();
-  const deployedContract = contracts?.[scaffoldConfig.targetNetwork.id]?.[0]?.contracts?.[
-    contractName as ContractName
-  ] as Contract<TContractName>;
+  const deployedContract = contracts?.[scaffoldConfig.targetNetwork.id]?.[scaffoldConfig.targetNetwork.network]
+    ?.contracts?.[contractName as ContractName] as Contract<TContractName>;
   const [status, setStatus] = useState<ContractCodeStatus>(ContractCodeStatus.LOADING);
   const provider = useProvider({ chainId: scaffoldConfig.targetNetwork.id });
 
