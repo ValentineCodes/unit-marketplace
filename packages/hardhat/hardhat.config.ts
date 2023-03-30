@@ -21,6 +21,12 @@ const config: HardhatUserConfig = {
       // By default, it will take the first Hardhat account as the deployer
       default: 0,
     },
+    tokenHolder: {
+      default: 1,
+    },
+    nftTrader: {
+      default: 2,
+    },
   },
   networks: {
     // View the networks that are pre-configured.
