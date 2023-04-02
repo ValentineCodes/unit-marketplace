@@ -1,5 +1,7 @@
-import { getNamedAccounts, deployments, ethers } from "hardhat";
+import { getNamedAccounts, deployments, ethers, network } from "hardhat";
 import { DeployFunction } from "hardhat-deploy/types";
+import { developmentChains } from "../helper-hardhat-config";
+import { verify } from "../scripts/verifyContract";
 
 const deployMocks: DeployFunction = async () => {
   const { deploy, log } = deployments;
@@ -13,7 +15,7 @@ const deployMocks: DeployFunction = async () => {
 
   log("Deploying Unit...");
 
-  await deploy("Unit", {
+  const unit = await deploy("Unit", {
     from: deployer,
     log: true,
     libraries: {
@@ -25,6 +27,10 @@ const deployMocks: DeployFunction = async () => {
   });
 
   log("Unit Deployed!✅");
+
+  if (!developmentChains.includes(network.name)) {
+    await verify(unit.address, []);
+  }
 };
 
 export default deployMocks;
