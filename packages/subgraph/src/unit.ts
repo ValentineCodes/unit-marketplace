@@ -75,7 +75,7 @@ export function handleItemSellerUpdated(event: ItemSellerUpdatedEvent): void {
 export function handleItemUnlisted(event: ItemUnlistedEvent): void {
   store.remove(
     "Listing",
-    computeItemId(event.params.nft, event.params.tokenId).toString()
+    computeItemId(event.params.nft, event.params.tokenId).toHexString()
   );
 }
 
@@ -189,7 +189,7 @@ export function handleOfferAccepted(event: OfferAcceptedEvent): void {
 
   store.remove(
     "Listing",
-    computeItemId(event.params.nft, event.params.tokenId).toString()
+    computeItemId(event.params.nft, event.params.tokenId).toHexString()
   );
 
   store.remove(
@@ -198,7 +198,7 @@ export function handleOfferAccepted(event: OfferAcceptedEvent): void {
       event.params.offerOwner,
       event.params.nft,
       event.params.tokenId
-    ).toString()
+    ).toHexString()
   );
 }
 
@@ -243,14 +243,14 @@ export function handleOfferRemoved(event: OfferRemovedEvent): void {
       event.params.offerOwner,
       event.params.nft,
       event.params.tokenId
-    ).toString()
+    ).toHexString()
   );
 }
 
 export function handleEarningWithdrawn(event: EarningWithdrawnEvent): void {
   store.remove(
     "Earning",
-    event.params.owner.concatI32(event.params.token.toI32()).toString()
+    event.params.owner.concatI32(event.params.token.toI32()).toHexString()
   );
 }
 
