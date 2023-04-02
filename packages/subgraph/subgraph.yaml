@@ -29,7 +29,6 @@ dataSources:
         - OfferCreated
         - OfferDeadlineExtended
         - OfferRemoved
-        - OwnershipTransferred
       abis:
         - name: Unit
           file: ./abis/Unit.json
@@ -64,6 +63,4 @@ dataSources:
           handler: handleOfferDeadlineExtended
         - event: OfferRemoved(address,uint256,address)
           handler: handleOfferRemoved
-        - event: OwnershipTransferred(indexed address,indexed address)
-          handler: handleOwnershipTransferred
       file: ./src/unit.ts
