@@ -10,7 +10,7 @@ type Fee @entity(immutable: true) {
   token: Bytes! # address
 }
 
-type Listing @entity(immutable: true) {
+type Listing @entity {
   id: Bytes!
   owner: Bytes! # address
   nft: Bytes! # address
@@ -22,7 +22,7 @@ type Listing @entity(immutable: true) {
   blockTimestamp: BigInt!
 }
 
-type Offer @entity(immutable: true) {
+type Offer @entity {
   id: Bytes!
   owner: Bytes! # address
   nft: Bytes! # address
