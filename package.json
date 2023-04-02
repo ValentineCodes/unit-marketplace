@@ -5,7 +5,8 @@
   "workspaces": {
     "packages": [
       "packages/hardhat",
-      "packages/nextjs"
+      "packages/nextjs",
+      "packages/subgraph"
     ]
   },
   "scripts": {
@@ -28,7 +29,14 @@
     "postinstall": "husky install && node packages/nextjs/scripts/generateEmptyContractFile.mjs",
     "precommit": "lint-staged",
     "vercel": "yarn workspace @se-2/nextjs vercel",
-    "vercel:yolo": "yarn workspace @se-2/nextjs vercel:yolo"
+    "vercel:yolo": "yarn workspace @se-2/nextjs vercel:yolo",
+    "graph:codegen": "yarn workspace @se-2/subgraph codegen",
+    "graph:build": "yarn workspace @se-2/subgraph build",
+    "graph:deploy": "yarn workspace @se-2/subgraph deploy",
+    "graph:create-local": "yarn workspace @se-2/subgraph create-local",
+    "graph:remove-local": "yarn workspace @se-2/subgraph remove-local",
+    "graph:deploy-local": "yarn workspace @se-2/subgraph deploy-local",
+    "graph:test": "yarn workspace @se-2/subgraph test"
   },
   "packageManager": "yarn@3.2.3",
   "devDependencies": {

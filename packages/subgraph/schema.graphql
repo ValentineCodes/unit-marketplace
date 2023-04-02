@@ -1,0 +1,179 @@
+type EarningsWithdrawn @entity(immutable: true) {
+  id: Bytes!
+  owner: Bytes! # address
+  token: Bytes! # address
+  amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type FeesWithdrawn @entity(immutable: true) {
+  id: Bytes!
+  feeOwner: Bytes! # address
+  token: Bytes! # address
+  amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ItemAuctionDisabled @entity(immutable: true) {
+  id: Bytes!
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  fixedPrice: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ItemAuctionEnabled @entity(immutable: true) {
+  id: Bytes!
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  startingPrice: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ItemBought @entity(immutable: true) {
+  id: Bytes!
+  buyer: Bytes! # address
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  token: Bytes! # address
+  price: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ItemDeadlineExtended @entity(immutable: true) {
+  id: Bytes!
+  owner: Bytes! # address
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  oldDeadline: BigInt! # uint256
+  newDeadline: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ItemListed @entity(immutable: true) {
+  id: Bytes!
+  owner: Bytes! # address
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  token: Bytes! # address
+  price: BigInt! # uint256
+  auction: Boolean! # bool
+  deadline: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ItemPriceUpdated @entity(immutable: true) {
+  id: Bytes!
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  token: Bytes! # address
+  oldPrice: BigInt! # uint256
+  newPrice: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ItemSellerUpdated @entity(immutable: true) {
+  id: Bytes!
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  oldSeller: Bytes! # address
+  newSeller: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type ItemUnlisted @entity(immutable: true) {
+  id: Bytes!
+  owner: Bytes! # address
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OfferAccepted @entity(immutable: true) {
+  id: Bytes!
+  offerOwner: Bytes! # address
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  token: Bytes! # address
+  amount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OfferAmountUpdated @entity(immutable: true) {
+  id: Bytes!
+  offerOwner: Bytes! # address
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  token: Bytes! # address
+  oldAmount: BigInt! # uint256
+  newAmount: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OfferCreated @entity(immutable: true) {
+  id: Bytes!
+  offerOwner: Bytes! # address
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  token: Bytes! # address
+  amount: BigInt! # uint256
+  deadline: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OfferDeadlineExtended @entity(immutable: true) {
+  id: Bytes!
+  offerOwner: Bytes! # address
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  oldDeadline: BigInt! # uint256
+  newDeadline: BigInt! # uint256
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OfferRemoved @entity(immutable: true) {
+  id: Bytes!
+  nft: Bytes! # address
+  tokenId: BigInt! # uint256
+  offerOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
+
+type OwnershipTransferred @entity(immutable: true) {
+  id: Bytes!
+  previousOwner: Bytes! # address
+  newOwner: Bytes! # address
+  blockNumber: BigInt!
+  blockTimestamp: BigInt!
+  transactionHash: Bytes!
+}
