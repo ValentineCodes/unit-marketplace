@@ -1,13 +1,47 @@
-import { Transition, Dialog } from "@headlessui/react";
+import { Transition, Dialog, Switch } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
-import { Fragment } from "react";
+import { Fragment, useState, useCallback} from "react";
 import { InputBase } from "../scaffold-eth";
+import { BigNumber, ethers } from "ethers";
+import DeadlineInput from "./DeadlineInput";
 
+type Item = {
+  nft: string;
+  tokenId: string;
+  token: string;
+  price: string | BigNumber;
+  auction: boolean;
+  deadline: string
+}
 interface Props {
     isOpen: boolean;
     toggleVisibility: () => void;
 }
 export default ({isOpen, toggleVisibility}: Props) => {
+
+  const [item, setItem] = useState<Item>({
+    nft: "",
+    tokenId: "",
+    token: "",
+    price: "",
+    auction: false,
+    deadline: ""
+  })
+  const [isTokenPrice, setIsTokenPrice] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(false);
+
+
+const handleItemValueChange = (name: string, value: string) => {
+    setItem(current => ({...current, [name] : value}))
+}
+
+const multiplyBy1e18 = useCallback(() => {
+  if (!item.price) {
+    return;
+  }
+  handleItemValueChange("price", ethers.utils.parseEther(item.price.toString()));
+}, [item.price]);
 
     return (
         <Transition appear show={isOpen} as={Fragment}>
@@ -32,6 +66,55 @@ export default ({isOpen, toggleVisibility}: Props) => {
 
                     <XCircleIcon className="text-black hover:text-[red] transition-colors duration-300 cursor-pointer  w-10" onClick={toggleVisibility} />
                   </Dialog.Title>
+
+                  <div className="space-y-4">
+                    <InputBase name="nft" value={item.nft} placeholder="NFT address" onChange={(value) => handleItemValueChange("nft", value)} />
+                    <InputBase name="tokenId" value={item.tokenId} placeholder="Token ID" onChange={(value => handleItemValueChange("tokenId", value))} />
+
+                    <input type="checkbox" id="token" name="token" checked={isTokenPrice} onChange={(e) => setIsTokenPrice(!isTokenPrice)} />
+                    <label htmlFor="token" className="text-black ml-2">Use token currency</label>
+
+                  {isTokenPrice &&  <InputBase name="token" value={item.token} placeholder="Token address" onChange={(value) => handleItemValueChange("token", value)} /> } 
+                    <InputBase name="price" value={item.price} placeholder="Price in wei" onChange={(value) => handleItemValueChange("price", value)}  suffix={
+                    !error && (
+                      <div
+                        className="space-x-4 flex tooltip tooltip-top tooltip-secondary before:content-[attr(data-tip)] before:right-[-10px] before:left-auto before:transform-none"
+                        data-tip="Multiply by 10^18 (wei)"
+                      >
+                        <button className="cursor-pointer font-semibold px-4 text-accent" onClick={multiplyBy1e18}>
+                          ∗
+                        </button>
+                      </div>
+                    )
+                  } />
+
+                    {isTokenPrice && (
+                       <Switch.Group>
+                       <div className="flex items-center">
+                         <Switch.Label className="mr-4 text-black">{item.auction? "Disable": "Enable"} Auction</Switch.Label>
+                         <Switch
+                           checked={item.auction}
+                           onChange={(checked) => handleItemValueChange("auction", checked)}
+                           className={`${
+                             item.auction ? 'bg-blue-600' : 'bg-gray-200'
+                           } relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2`}
+                         >
+                           <span
+                             className={`${
+                               item.auction ? 'translate-x-6' : 'translate-x-1'
+                             } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                           />
+                         </Switch>
+                       </div>
+                     </Switch.Group>
+                    )}
+
+                    <DeadlineInput name="deadline" placeholder="Deadline" onChange={value => handleItemValueChange("deadline", value)} />
+
+                    <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`}>
+                        Send 💸
+                    </button>
+                  </div>
                   
                 </Dialog.Panel>
               </Transition.Child>

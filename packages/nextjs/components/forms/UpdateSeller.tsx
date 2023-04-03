@@ -3,6 +3,7 @@ import { XCircleIcon } from "@heroicons/react/24/outline";
 import { Fragment, useState } from "react";
 import { InputBase } from "../scaffold-eth";
 
+
 interface Props {
     isOpen: boolean;
     toggleVisibility: () => void;

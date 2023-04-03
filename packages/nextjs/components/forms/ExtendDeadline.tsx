@@ -3,6 +3,7 @@ import { XCircleIcon } from "@heroicons/react/24/outline";
 import { Fragment, useState, useCallback } from "react";
 import { InputBase } from "../scaffold-eth";
 import { BigNumber, ethers } from "ethers";
+import DeadlineInput from "./DeadlineInput";
 
 interface Props {
     isOpen: boolean;
@@ -29,8 +30,7 @@ export default ({isOpen, toggleVisibility}: Props) => {
                         <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                             <XCircleIcon className="text-black hover:text-[red] transition-colors duration-300 cursor-pointer  w-10" onClick={toggleVisibility} />
 
-                            <InputBase name="extendDeadline" value={extraTime} placeholder="Extra time in seconds" onChange={setExtraTime} />
-
+                            <DeadlineInput name="extendDeadline" placeholder="Extra time" onChange={setExtraTime} />
                             <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`}>
                                 Send 💸
                             </button>
