@@ -1,9 +1,20 @@
 import Head from "next/head";
 import Link from "next/link";
 import type { NextPage } from "next";
-import { BugAntIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { XCircleIcon } from "@heroicons/react/24/outline";
+import { Listings } from "~~/components/Listings";
+import Earnings from "~~/components/Earnings";
+import { Fragment, useState } from "react";
+import { Dialog, Transition } from "@headlessui/react";
+import ListItemModal from "~~/components/modals/ListItemModal";
+
 
 const Home: NextPage = () => {
+  const [showListItemModal, setShowListItemModal] = useState(false)
+
+  const toggleListItemModal = () => {
+    setShowListItemModal(current => !current)
+  }
   return (
     <>
       <Head>
@@ -11,47 +22,25 @@ const Home: NextPage = () => {
         <meta name="description" content="Created with 🏗 scaffold-eth" />
       </Head>
 
-      <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <h1 className="text-center mb-8">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">scaffold-eth 2</span>
-          </h1>
-          <p className="text-center text-lg">
-            Get started by editing{" "}
-            <code className="italic bg-base-300 text-base font-bold">packages/nextjs/pages/index.tsx</code>
-          </p>
-          <p className="text-center text-lg">
-            Edit your smart contract <code className="italic bg-base-300 text-base font-bold">YourContract.sol</code> in{" "}
-            <code className="italic bg-base-300 text-base font-bold">packages/hardhat/contracts</code>
-          </p>
+
+      <div className="flex flex-wrap gap-5 items-center justify-between px-5 py-3 border-b border-white/30">
+        <div className="flex items-center space-x-4">
+          <Earnings name="Earnings" items={[{owner: "", address:""}]} onWithdraw={() => console.log("Withdraw...")} />
+          <Earnings name="Fees" items={[{owner: "", address:""}]} onWithdraw={() => console.log("Withdraw...")} />
         </div>
 
-        <div className="flex-grow bg-base-300 w-full mt-16 px-8 py-12">
-          <div className="flex justify-center items-center gap-12 flex-col sm:flex-row">
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <BugAntIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Tinker with your smart contract using the{" "}
-                <Link href="/debug" passHref className="link">
-                  Debug Contract
-                </Link>{" "}
-                tab.
-              </p>
-            </div>
-            <div className="flex flex-col bg-base-100 px-10 py-10 text-center items-center max-w-xs rounded-3xl">
-              <SparklesIcon className="h-8 w-8 fill-secondary" />
-              <p>
-                Experiment with{" "}
-                <Link href="/example-ui" passHref className="link">
-                  Example UI
-                </Link>{" "}
-                to build your own UI.
-              </p>
-            </div>
-          </div>
+        <div className="space-x-4">
+          <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-4 py-1 text-lg">My Items</button>
+          <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-4 py-1 text-lg" onClick={toggleListItemModal}>List Item</button>
         </div>
       </div>
+
+      <Listings />
+
+      {/* Modals */}
+
+<ListItemModal isOpen={showListItemModal} toggleVisibility={toggleListItemModal} />
+      
     </>
   );
 };

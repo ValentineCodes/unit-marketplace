@@ -13,8 +13,15 @@ import { useAppStore } from "~~/services/store/store";
 import { wagmiClient } from "~~/services/web3/wagmiClient";
 import { appChains } from "~~/services/web3/wagmiConnectors";
 import "~~/styles/globals.css";
+import {ApolloProvider, ApolloClient, InMemoryCache} from "@apollo/client"
+
+const apolloClient = new ApolloClient({
+  cache: new InMemoryCache(),
+  uri: "https://api.studio.thegraph.com/query/44750/unit/0.0.5"
+})
 
 const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
+
   const price = useEthPrice();
   const setEthPrice = useAppStore(state => state.setEthPrice);
 
@@ -30,9 +37,12 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
       <RainbowKitProvider chains={appChains.chains} avatar={BlockieAvatar}>
         <div className="flex flex-col min-h-screen">
           <Header />
-          <main className="relative flex flex-col flex-1">
-            <Component {...pageProps} />
-          </main>
+
+          <ApolloProvider client={apolloClient}>
+            <main className="relative flex flex-col flex-1">
+              <Component {...pageProps} />
+            </main>
+          </ApolloProvider>
           <Footer />
         </div>
         <Toaster />
