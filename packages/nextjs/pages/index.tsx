@@ -6,14 +6,14 @@ import { Listings } from "~~/components/Listings";
 import Earnings from "~~/components/Earnings";
 import { Fragment, useState } from "react";
 import { Dialog, Transition } from "@headlessui/react";
-import ListItemModal from "~~/components/modals/ListItemModal";
+import ListItem from "~~/components/forms/ListItem";
 
 
 const Home: NextPage = () => {
-  const [showListItemModal, setShowListItemModal] = useState(false)
+  const [showListItem, setShowListItem] = useState(false)
 
-  const toggleListItemModal = () => {
-    setShowListItemModal(current => !current)
+  const toggleListItem = () => {
+    setShowListItem(current => !current)
   }
   return (
     <>
@@ -31,7 +31,7 @@ const Home: NextPage = () => {
 
         <div className="space-x-4">
           <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-4 py-1 text-lg">My Items</button>
-          <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-4 py-1 text-lg" onClick={toggleListItemModal}>List Item</button>
+          <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-4 py-1 text-lg" onClick={toggleListItem}>List Item</button>
         </div>
       </div>
 
@@ -39,7 +39,7 @@ const Home: NextPage = () => {
 
       {/* Modals */}
 
-<ListItemModal isOpen={showListItemModal} toggleVisibility={toggleListItemModal} />
+      <ListItem isOpen={showListItem} toggleVisibility={toggleListItem} />
       
     </>
   );

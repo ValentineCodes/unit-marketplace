@@ -8,6 +8,7 @@ interface Props {
     toggleVisibility: () => void;
 }
 export default ({isOpen, toggleVisibility}: Props) => {
+
     return (
         <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={toggleVisibility}>
@@ -25,11 +26,11 @@ export default ({isOpen, toggleVisibility}: Props) => {
                 <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                   <Dialog.Title
                     as="div"
-                    className="text-lg font-medium leading-6 text-gray-900"
+                    className="text-lg font-medium leading-6 text-gray-900 flex items-center justify-between"
                   >
                     <h3>List Item</h3>
 
-                    <XCircleIcon className="text-[red] absolute top-2 right-2 w-10" onClick={toggleVisibility} />
+                    <XCircleIcon className="text-black hover:text-[red] transition-colors duration-300 cursor-pointer  w-10" onClick={toggleVisibility} />
                   </Dialog.Title>
                   
                 </Dialog.Panel>
