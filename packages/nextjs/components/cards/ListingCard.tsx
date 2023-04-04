@@ -2,7 +2,7 @@ import { Popover, Transition } from "@headlessui/react"
 import { EllipsisHorizontalIcon } from "@heroicons/react/24/outline"
 import { useState, useEffect } from "react"
 import UpdateSeller from "../forms/UpdateSeller"
-import UpdatePrice from "../forms/UpdatePrice"
+import UpdatePrice, { Action } from "../forms/UpdatePrice"
 import ExtendDeadline from "../forms/ExtendDeadline"
 import { ethers } from "ethers"
 import { useContractRead } from "wagmi"
@@ -24,6 +24,7 @@ export default ({listing}: Props ) => {
     const [extendDeadline, setExtendDeadlne] = useState(false)
 
     const [token, setToken] = useState<any>(null)
+    const [action, setAction] = useState<Action>("updatePrice")
 
     const toggleUpdateSeller = () => {
         setUpdateSeller(current => !current)
@@ -35,6 +36,20 @@ export default ({listing}: Props ) => {
 
     const toggleExtendDeadline = () => {
         setExtendDeadlne(current => !current)
+    }
+
+    const handlePriceUpdate = () => {
+        setAction("updatePrice")
+        toggleUpdatePrice()
+    }
+
+    const handleAuctionToggle = () => {
+        if(listing.auction) {
+            setAction("disableAuction")
+        } else {
+            setAction("enableAuction")
+        }
+        toggleUpdatePrice()
     }
 
     const {writeAsync: unlist, isLoading: isUnlisting} = useScaffoldContractWrite({
@@ -55,8 +70,6 @@ export default ({listing}: Props ) => {
         functionName: "buyItemWithToken",
         args: [listing.nft, listing.tokenId, listing.token, listing.price],
     })
-
-
 
     const {data: tokenURI} = useContractRead({
         chainId: getTargetNetwork().id,
@@ -102,7 +115,7 @@ export default ({listing}: Props ) => {
             </div>
             <div className="space-y-4 px-2 py-4">
                 <div className="flex items-center justify-between space-x-2 font-bold">
-                   {token && <h3>{token.name}#14</h3> } 
+                   {token && <h3>{token.name}#{listing.tokenId}</h3> } 
 
                     <Popover className="relative">
                         <Popover.Button><EllipsisHorizontalIcon className="w-8 bg-black/80 text-white rounded-lg" /></Popover.Button>
@@ -118,9 +131,9 @@ export default ({listing}: Props ) => {
 
                                     <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer">Offers</li>
                                     <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleUpdateSeller}>Update seller</li>
-                                    <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleUpdatePrice}>Update price</li>
+                                    <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handlePriceUpdate}>Update price</li>
                                     <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleExtendDeadline}>Extend deadline</li>
-                                    <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer">{listing.auction ? "Disable": "Enable"} Auction</li>
+                                    <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handleAuctionToggle}>{listing.auction ? "Disable": "Enable"} Auction</li>
                                     <li className="px-4 py-2 bg-green-500 text-white cursor-pointer" onClick={purchase}>Purchase</li>
                                     <li className="px-4 py-2 bg-red-700 text-white cursor-pointer" onClick={unlist}>Unlist</li>
 
@@ -133,7 +146,7 @@ export default ({listing}: Props ) => {
 
                 <div className="flex items-center justify-between">
                     <div className="-space-y-1">
-                        <h4 className="font-bold text-sm">Price</h4>
+                        <h4 className="font-bold text-sm">{listing.auction? "Starting price": "Price"}</h4>
                        {listing.token === ETH_ADDRESS?  <p className="text-sm text-gray-500">{ethers.utils.formatEther(listing.price)} ETH</p> : <TokenPrice price={listing.price} token={listing.token} />}
                     </div>
 
@@ -147,7 +160,7 @@ export default ({listing}: Props ) => {
             {/* Modals  */}
 
             <UpdateSeller isOpen={updateSeller} toggleVisibility={toggleUpdateSeller} listing={listing} />
-            <UpdatePrice isOpen={updatePrice} toggleVisibility={toggleUpdatePrice} listing={listing} />
+            <UpdatePrice action={action} isOpen={updatePrice} toggleVisibility={toggleUpdatePrice} listing={listing} />
             <ExtendDeadline isOpen={extendDeadline} toggleVisibility={toggleExtendDeadline} listing={listing} />
         </div>
     )

@@ -6,19 +6,49 @@ import { XCircleIcon } from "@heroicons/react/24/outline";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { Listing } from "../Listings";
 
+export type Action = "updatePrice" | "enableAuction" | "disableAuction"
 interface Props {
+  action: Action;
   isOpen: boolean;
   toggleVisibility: () => void;
   listing: Listing;
 }
-export default ({ isOpen, toggleVisibility, listing }: Props) => {
+export default ({action, isOpen, toggleVisibility, listing }: Props) => {
   const [price, setPrice] = useState<string | BigNumber>("");
 
-  const {writeAsync, isLoading} = useScaffoldContractWrite({
+  const {writeAsync: updatePrice, isLoading: isUpdatingPrice} = useScaffoldContractWrite({
     contractName: "Unit",
     functionName: "updateItemPrice",
     args: [listing.nft, listing.tokenId, price]
-})
+  })
+
+  const {writeAsync: enableAuction, isLoading: isEnablingAuction} = useScaffoldContractWrite({
+    contractName: "Unit",
+    functionName: "enableAuction",
+    args: [listing.nft, listing.tokenId, price]
+  })
+
+  const {writeAsync: disableAuction, isLoading: isDisablingAuction} = useScaffoldContractWrite({
+    contractName: "Unit",
+    functionName: "disableAuction",
+    args: [listing.nft, listing.tokenId, price]
+  })
+
+  const handleTx = () => {
+    switch (action) {
+      case "updatePrice": 
+        updatePrice()
+        break;
+      case "enableAuction":
+        enableAuction()
+        break;
+      case "disableAuction":
+        disableAuction()
+        break;
+      default:
+        break;
+    }
+  }
 
 
   const multiplyBy1e18 = useCallback(() => {
@@ -61,9 +91,9 @@ export default ({ isOpen, toggleVisibility, listing }: Props) => {
                     )}
                 />
 
-<button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(price)} onClick={writeAsync}>
-                               {!isLoading && "Send 💸"}
-                            </button>
+                <button className={`btn btn-secondary btn-sm mt-4 ${isUpdatingPrice || isEnablingAuction || isDisablingAuction ? "loading" : ""}`} disabled={!Boolean(price)} onClick={handleTx}>
+                    {!isUpdatingPrice && !isEnablingAuction && !isDisablingAuction  && "Send 💸"}
+                </button>
               </Dialog.Panel>
             </Transition.Child>
           </div>
