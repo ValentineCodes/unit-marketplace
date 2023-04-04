@@ -6,7 +6,6 @@ type Earning @entity(immutable: true) {
 
 type Fee @entity(immutable: true) {
   id: Bytes!
-  owner: Bytes! # address
   token: Bytes! # address
 }
 

@@ -126,13 +126,14 @@ export function handleItemDeadlineExtended(
 }
 
 export function handleItemBought(event: ItemBoughtEvent): void {
-  let listing = Listing.load(
-    computeItemId(event.params.nft, event.params.tokenId)
-  );
+  const listingId = computeItemId(event.params.nft, event.params.tokenId);
+  let listing = Listing.load(listingId);
 
   let earnings = Earning.load(
     listing!.owner.concatI32(event.params.token.toI32())
   );
+
+  let fees = Fee.load(event.params.token);
 
   if (!earnings) {
     earnings = new Earning(
@@ -144,6 +145,16 @@ export function handleItemBought(event: ItemBoughtEvent): void {
 
     earnings.save();
   }
+
+  if (!fees) {
+    fees = new Fee(event.params.token);
+
+    fees.token = event.params.token;
+
+    fees.save();
+  }
+
+  store.remove("Listing", listingId.toHexString());
 }
 
 export function handleOfferCreated(event: OfferCreatedEvent): void {
@@ -176,6 +187,8 @@ export function handleOfferAccepted(event: OfferAcceptedEvent): void {
     listing!.owner.concatI32(event.params.token.toI32())
   );
 
+  let fees = Fee.load(event.params.token);
+
   if (!earnings) {
     earnings = new Earning(
       listing!.owner.concatI32(event.params.token.toI32())
@@ -185,6 +198,14 @@ export function handleOfferAccepted(event: OfferAcceptedEvent): void {
     earnings.token = event.params.token;
 
     earnings.save();
+  }
+
+  if (!fees) {
+    fees = new Fee(event.params.token);
+
+    fees.token = event.params.token;
+
+    fees.save();
   }
 
   store.remove(
@@ -257,7 +278,6 @@ export function handleEarningWithdrawn(event: EarningWithdrawnEvent): void {
 export function handleFeeWithdrawn(event: FeeWithdrawnEvent): void {
   let entity = new Fee(event.params.token);
 
-  entity.owner = event.params.feeOwner;
   entity.token = event.params.token;
 
   entity.save();
