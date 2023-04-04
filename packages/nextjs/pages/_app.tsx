@@ -13,9 +13,9 @@ import { useAppStore } from "~~/services/store/store";
 import { wagmiClient } from "~~/services/web3/wagmiClient";
 import { appChains } from "~~/services/web3/wagmiConnectors";
 import "~~/styles/globals.css";
-import {ApolloProvider, ApolloClient, InMemoryCache} from "@apollo/client"
+import {ApolloProvider, ApolloClient, InMemoryCache, gql} from "@apollo/client"
 
-const apolloClient = new ApolloClient({
+export const apolloClient = new ApolloClient({
   cache: new InMemoryCache(),
   uri: "https://api.studio.thegraph.com/query/44750/unit/0.0.5"
 })

@@ -1,13 +1,43 @@
-import { useQuery } from "@apollo/client";
-import { GET_LISTINGS } from "~~/apis/subgraphQueries";
-import NFTCard from "./cards/NFTCard";
+import { useQuery, gql } from "@apollo/client";
+import { getListings } from "~~/apis/subgraphQueries";
+import ListingCard from "./cards/ListingCard";
+import { BigNumber } from "ethers";
+import { apolloClient } from "~~/pages/_app";
+import { useState } from "react";
 
+export type Listing = {
+    id?: string;
+    owner: string,
+    nft: string,
+    tokenId: string | number,
+    token: string,
+    price: string | BigNumber,
+    auction: boolean,
+    deadline: string | number
+}
 export function Listings() {
-    const {loading, error, data} = useQuery(GET_LISTINGS)
-    
+    // const {loading, error, data} = useQuery(getListings())
+    const [listings, setListings] = useState<Listing[]>()
+
+    apolloClient.query({
+        query: gql`
+        query GetListings{
+          listings {
+            id
+            owner
+            nft
+            tokenId
+            token
+            price
+            auction
+            deadline
+          }
+        }
+      `
+      }).then(result => setListings(result.data.listings))
     return (
         <div className="flex flex-wrap justify-center items-center gap-5 my-10">
-{[1,2,3,4,5,6,7,8,9].map(item => <NFTCard />)}
+            { listings?.map((item: Listing) => <ListingCard key={item.id} listing={item}  />)}
         </div>
     )
 }

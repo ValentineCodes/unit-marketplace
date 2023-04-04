@@ -1,15 +1,14 @@
 import { useState } from "react";
-import {
-  SECONDS_PER_DAY,
-  SECONDS_PER_HOUR,
-  SECONDS_PER_MINUTE,
-  SECONDS_PER_MONTH,
-  SECONDS_PER_WEEK,
-  SECONDS_PER_YEAR,
-} from "../../utils/constants";
 import { InputBase } from "../scaffold-eth";
 import { Popover, Transition } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/24/outline";
+
+const SECONDS_PER_MINUTE = 60;
+const SECONDS_PER_HOUR = 3600;
+const SECONDS_PER_DAY = 86400;
+const SECONDS_PER_WEEK = 604800;
+const SECONDS_PER_MONTH = 2628000;
+const SECONDS_PER_YEAR = 31540000;
 
 const timeOptions = ["Seconds", "Minutes", "Hours", "Days", "Weeks", "Years"];
 
