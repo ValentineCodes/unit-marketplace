@@ -4,6 +4,7 @@ import { Fragment, useState, useCallback} from "react";
 import { InputBase } from "../scaffold-eth";
 import { BigNumber, ethers } from "ethers";
 import DeadlineInput from "./DeadlineInput";
+import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 
 type Item = {
   nft: string;
@@ -28,7 +29,6 @@ export default ({isOpen, toggleVisibility}: Props) => {
     deadline: ""
   })
   const [isTokenPrice, setIsTokenPrice] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(false);
 
 
@@ -42,6 +42,26 @@ const multiplyBy1e18 = useCallback(() => {
   }
   handleItemValueChange("price", ethers.utils.parseEther(item.price.toString()));
 }, [item.price]);
+
+  const {writeAsync: list, isLoading: isListing} = useScaffoldContractWrite({
+    contractName: "Unit",
+    functionName: "listItem",
+    args: [item.nft, item.tokenId, item.price, item.deadline]
+  })
+
+  const {writeAsync: listWithToken, isLoading: isListingWithToken} = useScaffoldContractWrite({
+    contractName: "Unit",
+    functionName: "listItemWithToken",
+    args: [item.nft, item.tokenId, item.token, item.price, item.auction, item.deadline]
+  })
+
+  const handleTx = () => {
+    if(isTokenPrice) {
+      listWithToken()
+    } else {
+      list()
+    }
+  }
 
     return (
         <Transition appear show={isOpen} as={Fragment}>
@@ -111,8 +131,8 @@ const multiplyBy1e18 = useCallback(() => {
 
                     <DeadlineInput name="deadline" placeholder="Deadline" onChange={value => handleItemValueChange("deadline", value)} />
 
-                    <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`}>
-                        Send 💸
+                    <button className={`btn btn-secondary btn-sm mt-4 ${isListing || isListingWithToken ? "loading" : ""}`} onClick={handleTx}>
+                        {!isListing && !isListingWithToken && "Send 💸"}
                     </button>
                   </div>
                   
