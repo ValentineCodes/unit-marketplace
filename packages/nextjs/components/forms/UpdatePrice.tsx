@@ -3,15 +3,23 @@ import { InputBase } from "../scaffold-eth";
 import { Dialog, Transition } from "@headlessui/react";
 import { BigNumber, ethers } from "ethers";
 import { XCircleIcon } from "@heroicons/react/24/outline";
+import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { Listing } from "../Listings";
 
 interface Props {
   isOpen: boolean;
   toggleVisibility: () => void;
+  listing: Listing;
 }
-export default ({ isOpen, toggleVisibility }: Props) => {
+export default ({ isOpen, toggleVisibility, listing }: Props) => {
   const [price, setPrice] = useState<string | BigNumber>("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(false);
+
+  const {writeAsync, isLoading} = useScaffoldContractWrite({
+    contractName: "Unit",
+    functionName: "updateItemPrice",
+    args: [listing.nft, listing.tokenId, price]
+})
+
 
   const multiplyBy1e18 = useCallback(() => {
     if (!price) {
@@ -41,8 +49,7 @@ export default ({ isOpen, toggleVisibility }: Props) => {
                   value={price}
                   placeholder="New price in wei"
                   onChange={setPrice}
-                  suffix={
-                    !error && (
+                  suffix={(
                       <div
                         className="space-x-4 flex tooltip tooltip-top tooltip-secondary before:content-[attr(data-tip)] before:right-[-10px] before:left-auto before:transform-none"
                         data-tip="Multiply by 10^18 (wei)"
@@ -51,11 +58,12 @@ export default ({ isOpen, toggleVisibility }: Props) => {
                           ∗
                         </button>
                       </div>
-                    )
-                  }
+                    )}
                 />
 
-                <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`}>Send 💸</button>
+<button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(price)} onClick={writeAsync}>
+                               {!isLoading && "Send 💸"}
+                            </button>
               </Dialog.Panel>
             </Transition.Child>
           </div>

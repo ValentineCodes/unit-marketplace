@@ -4,14 +4,22 @@ import { Fragment, useState, useCallback } from "react";
 import { InputBase } from "../scaffold-eth";
 import { BigNumber, ethers } from "ethers";
 import DeadlineInput from "./DeadlineInput";
+import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { Listing } from "../Listings";
 
 interface Props {
     isOpen: boolean;
     toggleVisibility: () => void;
+    listing: Listing;
 }
-export default ({isOpen, toggleVisibility}: Props) => {
+export default ({isOpen, toggleVisibility, listing}: Props) => {
     const [extraTime, setExtraTime] = useState("")
-    const [isLoading, setIsLoading] = useState(false)
+
+    const {writeAsync, isLoading} = useScaffoldContractWrite({
+        contractName: "Unit",
+        functionName: "extendItemDeadline",
+        args: [listing.nft, listing.tokenId, extraTime]
+    })
     
     return (
         <Transition appear show={isOpen} as={Fragment}>
@@ -31,8 +39,8 @@ export default ({isOpen, toggleVisibility}: Props) => {
                             <XCircleIcon className="text-black hover:text-[red] transition-colors duration-300 cursor-pointer  w-10" onClick={toggleVisibility} />
 
                             <DeadlineInput name="extendDeadline" placeholder="Extra time" onChange={setExtraTime} />
-                            <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`}>
-                                Send 💸
+                            <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(seller)} onClick={writeAsync}>
+                               {!isLoading && "Send 💸"}
                             </button>
                         </Dialog.Panel>
                     </Transition.Child>

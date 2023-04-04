@@ -9,7 +9,7 @@ import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 interface Props {
     isOpen: boolean;
     toggleVisibility: () => void;
-    listing: Listing
+    listing: Listing;
 }
 export default ({isOpen, toggleVisibility, listing}: Props) => {
     const [seller, setSeller] = useState("")

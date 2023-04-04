@@ -147,8 +147,8 @@ export default ({listing}: Props ) => {
             {/* Modals  */}
 
             <UpdateSeller isOpen={updateSeller} toggleVisibility={toggleUpdateSeller} listing={listing} />
-            <UpdatePrice isOpen={updatePrice} toggleVisibility={toggleUpdatePrice} />
-            <ExtendDeadline isOpen={extendDeadline} toggleVisibility={toggleExtendDeadline} />
+            <UpdatePrice isOpen={updatePrice} toggleVisibility={toggleUpdatePrice} listing={listing} />
+            <ExtendDeadline isOpen={extendDeadline} toggleVisibility={toggleExtendDeadline} listing={listing} />
         </div>
     )
 }
