@@ -4,17 +4,28 @@ import type { NextPage } from "next";
 import { XCircleIcon } from "@heroicons/react/24/outline";
 import { Listings } from "~~/components/Listings";
 import Earnings from "~~/components/Earnings";
-import { Fragment, useState } from "react";
-import { Dialog, Transition } from "@headlessui/react";
+import { useEffect, useState } from "react";
 import ListItem from "~~/components/forms/ListItem";
+import Fees from "~~/components/Fees";
+import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
+import { useAccount } from "wagmi";
 
+ type FeeParams = {
+  token: string;
+}
 
 const Home: NextPage = () => {
   const [showListItem, setShowListItem] = useState(false)
+  const {data: unitOwner} = useScaffoldContractRead({
+    contractName: "Unit",
+    functionName: "owner"
+  })
+  const {address, isConnected} = useAccount()
 
   const toggleListItem = () => {
     setShowListItem(current => !current)
   }
+
   return (
     <>
       <Head>
@@ -25,8 +36,8 @@ const Home: NextPage = () => {
 
       <div className="flex flex-wrap gap-5 items-center justify-between px-5 py-3 border-b border-white/30">
         <div className="flex items-center space-x-4">
-          <Earnings name="Earnings" items={[{owner: "", address:""}]} onWithdraw={() => console.log("Withdraw...")} />
-          <Earnings name="Fees" items={[{owner: "", address:""}]} onWithdraw={() => console.log("Withdraw...")} />
+          <Earnings />
+         {isConnected && address === unitOwner && <Fees /> }
         </div>
 
         <div className="space-x-4">

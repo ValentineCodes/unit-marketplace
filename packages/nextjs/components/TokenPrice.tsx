@@ -19,10 +19,8 @@ export default ({price, token}: Props) => {
         }
     })
 
-    console.log("symbol: ", symbol )
-
     
     return (
-<p className="text-sm text-gray-500">{ethers.utils.formatEther(price)} {symbol}</p>
+        <>{!isFetching && price && token && <p className="text-sm text-gray-500">{ethers.utils.formatEther(price)} {symbol}</p>}</>
     )
 }
