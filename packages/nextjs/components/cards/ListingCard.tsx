@@ -5,7 +5,7 @@ import UpdateSeller from "../forms/UpdateSeller"
 import UpdatePrice, { Action } from "../forms/UpdatePrice"
 import ExtendDeadline from "../forms/ExtendDeadline"
 import { ethers } from "ethers"
-import { useAccount, useContractRead } from "wagmi"
+import { useAccount, useContractRead, useEnsAddress } from "wagmi"
 import { Listing } from "../Listings"
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth"
 import { ERC721ABI } from "~~/utils/abis"
@@ -14,8 +14,7 @@ import moment from "moment"
 import TokenPrice from "../TokenPrice"
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth"
 import Offers from "../Offers"
-
-
+import { isENS } from "~~/utils/helperFunctions"
 interface Props {
     listing: Listing;
 }
@@ -25,6 +24,12 @@ export default ({listing}: Props ) => {
     const [updatePrice, setUpdatePrice] = useState(false)
     const [extendDeadline, setExtendDeadlne] = useState(false)
     const {address, isConnected} = useAccount()
+    const {data: listingOwner, isLoading: isListingOwnerLoading} = useEnsAddress({
+        name: listing.owner,
+        enabled: isENS(listing.owner),
+        chainId: getTargetNetwork().id,
+        cacheTime: 30_000
+    })
 
     const [token, setToken] = useState<any>(null)
     const [action, setAction] = useState<Action>("updatePrice")
@@ -78,7 +83,7 @@ export default ({listing}: Props ) => {
         args: [listing.nft, listing.tokenId, listing.token, listing.price],
     })
 
-    const {data: tokenURI} = useContractRead({
+    const {data: tokenURI}  = useContractRead({
         chainId: getTargetNetwork().id,
         address: listing.nft,
         abi: ERC721ABI,
@@ -153,7 +158,8 @@ export default ({listing}: Props ) => {
                     </Popover>
                 </div>
 
-                <p className="text-sm">Owner {listing.owner.slice(0, 6)}...{listing.owner.slice(-4)}</p>
+                {/* <p className="text-sm">Owner {listing.owner.slice(0, 6)}...{listing.owner.slice(-4)}</p> */}
+                {!isListingOwnerLoading && <p className="text-sm">Owned by {listingOwner}</p>}
 
                 <div className="flex items-center justify-between">
                     <div className="-space-y-1">

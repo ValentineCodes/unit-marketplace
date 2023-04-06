@@ -7,7 +7,7 @@ import TokenPrice from "./TokenPrice";
 import { Spinner } from "./Spinner";
 import { gql } from "@apollo/client";
 import { useState, useEffect } from "react";
-import { useAccount } from "wagmi";
+import { useAccount, useEnsAddress } from "wagmi";
 import { apolloClient } from "~~/pages/_app";
 import { getEarnings } from "~~/apis/subgraphQueries";
 
@@ -28,6 +28,8 @@ const Earning = (token: EarningParams) => {
     functionName: "withdrawEarnings",
     args: [token.address]
   })
+
+
 
   if(earnings) {
     return (

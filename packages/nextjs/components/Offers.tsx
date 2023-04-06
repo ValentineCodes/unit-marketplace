@@ -5,12 +5,14 @@ import { BigNumber, ethers } from "ethers";
 import { ETH_ADDRESS } from "~~/utils/constants";
 import TokenPrice from "./TokenPrice";
 import moment from "moment";
-import { useAccount } from "wagmi";
+import { useAccount, useEnsAddress } from "wagmi";
 import { Listing } from "./Listings";
 import { apolloClient } from "~~/pages/_app";
 import { getOffers } from "~~/apis/subgraphQueries";
 import { Spinner } from "./Spinner";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { isENS } from "~~/utils/helperFunctions";
+import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 type OfferParams = {
     id: string;
@@ -44,14 +46,21 @@ const Offer = ({offer, canAccept}: OfferProps) => {
         args: [offer.nft, offer.tokenId]
     })
 
+    const {data: offerOwner , isLoading: isOfferOwnerLoading} = useEnsAddress({
+        name: offer.owner,
+        enabled: isENS(offer.owner),
+        chainId: getTargetNetwork().id,
+        cacheTime: 30_000
+    })
+
     return (
-        <div>
-            <div>
-                <p className="text-sm">Owner 0x......</p>
-                {offer.token === ETH_ADDRESS?  <p className="text-sm text-gray-500">{ethers.utils.formatEther(offer.amount)} ETH</p> : <TokenPrice price={offer.amount} token={offer.token} />}
+        <div className="px-2 py-1">
+            <div className="flex justify-between items-center text-sm">
+               {!isOfferOwnerLoading && <p>Owned by {offerOwner}</p> }
+                {offer.token === ETH_ADDRESS?  <p className="text-gray-500">{ethers.utils.formatEther(offer.amount)} ETH</p> : <TokenPrice price={offer.amount} token={offer.token} />}
             </div>
 
-            <div>
+            <div className="flex justify-between items-center">
                 <p>Expiration: {moment(new Date(Number(offer.deadline) * 1000)).fromNow()}</p>
                 {canAccept? <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm">Accept</button> : (
                          <Popover className="relative">
