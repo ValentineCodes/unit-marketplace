@@ -48,13 +48,15 @@ export default () => {
   const {address, isConnected} = useAccount()
   const [isLoading, setIsLoading] = useState(true)
 
-  console.log("earnings: ", earnings)
   useEffect(() => {
     if(isConnected) {
         apolloClient.query({
           query: getEarnings(address!)
-        }).then(result => {
-          setEarnings(result.data.earnings)}).catch(error => {
+        })
+        .then(result => {
+          setEarnings(result.data.earnings)
+        })
+        .catch(error => {
           console.log(error)
           return
         }).finally(() => {

@@ -5,7 +5,7 @@ import UpdateSeller from "../forms/UpdateSeller"
 import UpdatePrice, { Action } from "../forms/UpdatePrice"
 import ExtendDeadline from "../forms/ExtendDeadline"
 import { ethers } from "ethers"
-import { useContractRead } from "wagmi"
+import { useAccount, useContractRead } from "wagmi"
 import { Listing } from "../Listings"
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth"
 import { ERC721ABI } from "~~/utils/abis"
@@ -13,18 +13,25 @@ import { ETH_ADDRESS } from "~~/utils/constants"
 import moment from "moment"
 import TokenPrice from "../TokenPrice"
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth"
+import Offers from "../Offers"
 
 
 interface Props {
     listing: Listing;
 }
 export default ({listing}: Props ) => {
+    const [showOffers, setShowOffers] = useState(false)
     const [updateSeller, setUpdateSeller] = useState(false)
     const [updatePrice, setUpdatePrice] = useState(false)
     const [extendDeadline, setExtendDeadlne] = useState(false)
+    const {address, isConnected} = useAccount()
 
     const [token, setToken] = useState<any>(null)
     const [action, setAction] = useState<Action>("updatePrice")
+
+    const toggleShowOffers = () => {
+        setShowOffers(current => !current)
+    }
 
     const toggleUpdateSeller = () => {
         setUpdateSeller(current => !current)
@@ -129,13 +136,17 @@ export default ({listing}: Props ) => {
                             >
                             <Popover.Panel as="ul" className="absolute bg-white rounded-lg text-black min-w-[200px] border shadow-md font-normal">
 
-                                    <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer">Offers</li>
-                                    <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleUpdateSeller}>Update seller</li>
-                                    <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handlePriceUpdate}>Update price</li>
-                                    <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleExtendDeadline}>Extend deadline</li>
-                                    <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handleAuctionToggle}>{listing.auction ? "Disable": "Enable"} Auction</li>
-                                    <li className="px-4 py-2 bg-green-500 text-white cursor-pointer" onClick={purchase}>Purchase</li>
-                                    <li className="px-4 py-2 bg-red-700 text-white cursor-pointer" onClick={unlist}>Unlist</li>
+                                    <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleShowOffers}>Offers</li>
+                                    {isConnected && address !== listing.owner && !listing.auction && <li className="px-4 py-2 bg-green-500 text-white cursor-pointer" onClick={purchase}>Purchase</li>}
+                                    {isConnected && address === listing.owner && (
+                                        <>
+                                            <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleUpdateSeller}>Update seller</li>
+                                            <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handlePriceUpdate}>Update price</li>
+                                            <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleExtendDeadline}>Extend deadline</li>
+                                            <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handleAuctionToggle}>{listing.auction ? "Disable": "Enable"} Auction</li>
+                                            <li className="px-4 py-2 bg-red-700 text-white cursor-pointer" onClick={unlist}>Unlist</li>
+                                        </>
+                                    )}
 
                             </Popover.Panel>
                         </Transition>
@@ -158,10 +169,11 @@ export default ({listing}: Props ) => {
             </div>
 
             {/* Modals  */}
-
-            <UpdateSeller isOpen={updateSeller} toggleVisibility={toggleUpdateSeller} listing={listing} />
-            <UpdatePrice action={action} isOpen={updatePrice} toggleVisibility={toggleUpdatePrice} listing={listing} />
-            <ExtendDeadline isOpen={extendDeadline} toggleVisibility={toggleExtendDeadline} listing={listing} />
+            
+<Offers isOpen={showOffers} toggleVisibility={toggleShowOffers} listing={listing} canAcceptOffer={isConnected && listing.owner === address} />
+<UpdateSeller isOpen={updateSeller} toggleVisibility={toggleUpdateSeller} listing={listing} />
+<UpdatePrice action={action} isOpen={updatePrice} toggleVisibility={toggleUpdatePrice} listing={listing} />
+<ExtendDeadline isOpen={extendDeadline} toggleVisibility={toggleExtendDeadline} listing={listing} />
         </div>
     )
 }

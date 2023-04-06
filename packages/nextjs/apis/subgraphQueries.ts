@@ -17,6 +17,23 @@ export const getListings = () => {
   `;
 };
 
+export const getOffers = (nft: string, tokenId: string) => {
+  // TO-DO: deadline must be > current time
+  return gql`
+    {
+      offers(where: {nft: "${nft}", tokenId: "${tokenId}"}) {
+        id
+        owner
+        nft
+        tokenId
+        token
+        amount
+        deadline
+      }
+    }
+  `;
+};
+
 export const getEarnings = (owner: string) => {
   return gql`
     {
