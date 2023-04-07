@@ -46,6 +46,12 @@ const Offer = ({offer, canAccept}: OfferProps) => {
         args: [offer.nft, offer.tokenId]
     })
 
+    const {writeAsync: acceptOffer, isLoading: isAccepting} = useScaffoldContractWrite({
+        contractName: "Unit",
+        functionName: "acceptOffer",
+        args: [offer.owner, offer.nft, offer.tokenId]
+    })
+
     const {data: offerOwner , isLoading: isOfferOwnerLoading} = useEnsAddress({
         name: offer.owner,
         enabled: isENS(offer.owner),
@@ -62,7 +68,7 @@ const Offer = ({offer, canAccept}: OfferProps) => {
 
             <div className="flex justify-between items-center">
                 <p>Expiration: {moment(new Date(Number(offer.deadline) * 1000)).fromNow()}</p>
-                {canAccept? <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm">Accept</button> : (
+                {canAccept? <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={acceptOffer}>Accept</button> : (
                          <Popover className="relative">
                          <Popover.Button><EllipsisHorizontalIcon className="w-8 bg-black/80 text-white rounded-lg" /></Popover.Button>
                              <Transition
