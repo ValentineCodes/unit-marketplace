@@ -1,24 +1,22 @@
 import { Transition, Dialog } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
-import { Fragment, useState, useCallback } from "react";
-import { InputBase } from "../scaffold-eth";
-import { BigNumber, ethers } from "ethers";
+import { Fragment, useState } from "react";
 import DeadlineInput from "./DeadlineInput";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-import { Listing } from "../Listings";
+import { OfferParams } from "../Offers";
 
 interface Props {
     isOpen: boolean;
     toggleVisibility: () => void;
-    listing: Listing;
+    offer: OfferParams;
 }
-export default ({isOpen, toggleVisibility, listing}: Props) => {
+export default ({isOpen, toggleVisibility, offer}: Props) => {
     const [extraTime, setExtraTime] = useState("")
 
     const {writeAsync, isLoading} = useScaffoldContractWrite({
         contractName: "Unit",
-        functionName: "extendItemDeadline",
-        args: [listing.nft, listing.tokenId, extraTime]
+        functionName: "extendOfferDeadline",
+        args: [offer.nft, offer.tokenId, extraTime]
     })
     
     return (
@@ -38,7 +36,7 @@ export default ({isOpen, toggleVisibility, listing}: Props) => {
                         <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                             <XCircleIcon className="text-black hover:text-[red] transition-colors duration-300 cursor-pointer  w-10" onClick={toggleVisibility} />
 
-                            <DeadlineInput name="extendDeadline" placeholder="Extra time" onChange={setExtraTime} />
+                            <DeadlineInput name="extendOfferDeadline" placeholder="Extra time" onChange={setExtraTime} />
                             <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(extraTime)} onClick={writeAsync}>
                                {!isLoading && "Send 💸"}
                             </button>

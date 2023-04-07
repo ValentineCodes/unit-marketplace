@@ -13,8 +13,9 @@ import { Spinner } from "./Spinner";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { isENS } from "~~/utils/helperFunctions";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
+import ExtendOfferDeadline from "./forms/ExtendOfferDeadline";
 
-type OfferParams = {
+export type OfferParams = {
     id: string;
     owner: string
     nft: string;
@@ -29,12 +30,7 @@ interface OfferProps {offer: OfferParams; canAccept: boolean}
 const Offer = ({offer, canAccept}: OfferProps) => {
     const {address, isConnected} = useAccount()
 
-    const [updatePrice, setUpdatePrice] = useState(false)
     const [extendDeadline, setExtendDeadlne] = useState(false)
-
-    const toggleUpdatePrice = () => {
-        setUpdatePrice(current => !current)
-    }
 
     const toggleExtendDeadline = () => {
         setExtendDeadlne(current => !current)
@@ -84,7 +80,6 @@ const Offer = ({offer, canAccept}: OfferProps) => {
                                      <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer">Offers</li>
                                      {isConnected && address === offer.owner && (
                                          <>
-                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleUpdatePrice}>Update price</li>
                                              <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleExtendDeadline}>Extend deadline</li>
                                              <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={removeOffer}>Remove</li>
                                          </>
@@ -95,6 +90,8 @@ const Offer = ({offer, canAccept}: OfferProps) => {
                      </Popover>
                 )  }
             </div>
+
+            <ExtendOfferDeadline isOpen={extendDeadline} toggleVisibility={toggleExtendDeadline} offer={offer} />
         </div>
     )
 }
