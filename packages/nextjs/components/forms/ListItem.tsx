@@ -1,10 +1,13 @@
 import { Transition, Dialog, Switch } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
-import { Fragment, useState, useCallback} from "react";
+import { Fragment, useState, useCallback, useEffect} from "react";
 import { InputBase } from "../scaffold-eth";
 import { BigNumber, ethers } from "ethers";
 import DeadlineInput from "./DeadlineInput";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { usePrepareContractWrite, useContractWrite, erc721ABI } from "wagmi";
+import deployedContracts from "~~/generated/hardhat_contracts.ts"
+import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 type Item = {
   nft: string;
@@ -43,6 +46,16 @@ const multiplyBy1e18 = useCallback(() => {
   handleItemValueChange("price", ethers.utils.parseEther(item.price.toString()));
 }, [item.price]);
 
+const targetNetwork = getTargetNetwork()
+const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
+const { config: approveConfig } = usePrepareContractWrite({
+  address: item.nft,
+  abi: erc721ABI,
+  functionName: 'approve',
+  args: [unit.address, item.tokenId]
+ })
+ const { data, isLoading: isApproveLoading, isSuccess: isApprovalSuccessful, write: approve } = useContractWrite(approveConfig)
+
   const {writeAsync: list, isLoading: isListing} = useScaffoldContractWrite({
     contractName: "Unit",
     functionName: "listItem",
@@ -55,13 +68,22 @@ const multiplyBy1e18 = useCallback(() => {
     args: [item.nft, item.tokenId, item.token, item.price, item.auction, item.deadline]
   })
 
-  const handleTx = () => {
+  const approveUnitToSpendNFT = () => {
+    if(!isApproveLoading) {
+      approve() 
+    }
+  
+  }
+
+  useEffect(() => {
+    if(!isApprovalSuccessful) return 
+
     if(isTokenPrice) {
       listWithToken()
     } else {
       list()
     }
-  }
+  }, [isApprovalSuccessful])
 
     return (
         <Transition appear show={isOpen} as={Fragment}>
@@ -131,8 +153,8 @@ const multiplyBy1e18 = useCallback(() => {
 
                     <DeadlineInput name="deadline" placeholder="Deadline" onChange={value => handleItemValueChange("deadline", value)} />
 
-                    <button className={`btn btn-secondary btn-sm mt-4 ${isListing || isListingWithToken ? "loading" : ""}`} onClick={handleTx}>
-                        {!isListing && !isListingWithToken && "Send 💸"}
+                    <button className={`btn btn-secondary btn-sm mt-4 ${isListing || isListingWithToken ? "loading" : ""}`} onClick={approveUnitToSpendNFT}>
+                        {!isListing && !isListingWithToken && "List 💸"}
                     </button>
                   </div>
                   
