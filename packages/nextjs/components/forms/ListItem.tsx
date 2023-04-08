@@ -5,8 +5,8 @@ import { InputBase } from "../scaffold-eth";
 import { BigNumber, ethers } from "ethers";
 import DeadlineInput from "./DeadlineInput";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-import { usePrepareContractWrite, useContractWrite, erc721ABI } from "wagmi";
-import deployedContracts from "~~/generated/hardhat_contracts.ts"
+import { usePrepareContractWrite, useContractWrite, erc721ABI, useContractRead } from "wagmi";
+import deployedContracts from "~~/generated/hardhat_contracts"
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 
 type Item = {
@@ -48,6 +48,14 @@ const multiplyBy1e18 = useCallback(() => {
 
 const targetNetwork = getTargetNetwork()
 const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
+
+const {data: approvedSpender} = useContractRead({
+  address: item.nft,
+  abi: erc721ABI,
+  functionName: "getApproved",
+  args: [item.tokenId]
+})
+
 const { config: approveConfig } = usePrepareContractWrite({
   address: item.nft,
   abi: erc721ABI,
@@ -68,21 +76,34 @@ const { config: approveConfig } = usePrepareContractWrite({
     args: [item.nft, item.tokenId, item.token, item.price, item.auction, item.deadline]
   })
 
-  const approveUnitToSpendNFT = () => {
-    if(!isApproveLoading) {
+  console.log("approve loading: ", isApproveLoading)
+  console.log("approve success: ", isApprovalSuccessful)
+
+  const handleApproval = () => {
+    if(!isApproveLoading && approvedSpender !== unit.address) {
       approve() 
     }
+  }
+  const handleListing = () => {
+    if(isTokenPrice) {
+      listWithToken()
+    } else {
+      list()
+    }
+  }
+
+
+  const handleTx = () => {
+    // Approve unit to spend item if not already approved
+    // list item
+
   
   }
 
   useEffect(() => {
     if(!isApprovalSuccessful) return 
 
-    if(isTokenPrice) {
-      listWithToken()
-    } else {
-      list()
-    }
+  
   }, [isApprovalSuccessful])
 
     return (
@@ -153,7 +174,7 @@ const { config: approveConfig } = usePrepareContractWrite({
 
                     <DeadlineInput name="deadline" placeholder="Deadline" onChange={value => handleItemValueChange("deadline", value)} />
 
-                    <button className={`btn btn-secondary btn-sm mt-4 ${isListing || isListingWithToken ? "loading" : ""}`} onClick={approveUnitToSpendNFT}>
+                    <button className={`btn btn-secondary btn-sm mt-4 ${isListing || isListingWithToken ? "loading" : ""}`} onClick={handleTx}>
                         {!isListing && !isListingWithToken && "List 💸"}
                     </button>
                   </div>

@@ -40,7 +40,7 @@ export const getEarnings = (owner: string) => {
       earnings(where: {owner: "${owner}"}) {
         id
         owner
-        address
+        token
       }
     }
   `;

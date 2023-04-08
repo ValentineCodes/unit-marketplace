@@ -50,7 +50,7 @@ const Home: NextPage = () => {
 
       {/* Modals */}
 
-      <ListItem isOpen={showListItem} toggleVisibility={toggleListItem} />
+     {showListItem && <ListItem isOpen={showListItem} toggleVisibility={toggleListItem} />}
       
     </>
   );

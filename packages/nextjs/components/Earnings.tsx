@@ -1,33 +1,67 @@
 import { Popover, Transition } from "@headlessui/react";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
-import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { ChevronDoubleRightIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { useDeployedContractInfo, useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { ethers } from "ethers";
 import { ETH_ADDRESS } from "~~/utils/constants";
 import TokenPrice from "./TokenPrice";
 import { Spinner } from "./Spinner";
 import { gql } from "@apollo/client";
 import { useState, useEffect } from "react";
-import { useAccount, useEnsAddress } from "wagmi";
+import { useAccount, useContractRead, useEnsAddress } from "wagmi";
 import { apolloClient } from "~~/pages/_app";
 import { getEarnings } from "~~/apis/subgraphQueries";
+import { ERC20ANI } from "~~/utils/abis";
+import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
+import deployedContracts from "~~/generated/hardhat_contracts"
+
+const targetNetwork = getTargetNetwork()
 
 export type EarningParams = {
+    id?: string;
     owner?: string;
-    address: string;
+    token: string;
 }
 
-const Earning = (token: EarningParams) => {
-  const {data: earnings} = useScaffoldContractRead({
-    contractName: "Unit",
+interface EarningProps {
+  earning: EarningParams
+}
+
+const Earning = ({earning}: EarningProps) => {
+  // const {data: earnings} = useScaffoldContractRead({
+  //   contractName: "Unit",
+  //   functionName: "getEarnings",
+  //   args: [earning.owner, earning.token]
+  // })
+
+
+  const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
+
+  const {data: earnings, isFetching, refetch} = useContractRead({
+    chainId: targetNetwork.id,
+    address: unit.address,
+    abi: unit.abi,
     functionName: "getEarnings",
-    args: [token.owner, token.address]
-  })
+    args: [earning.owner, earning.token],
+    onError: error => {
+        notification.error(error.message)
+    }
+})
+
+  
 
   const {writeAsync: withdraw, isLoading} = useScaffoldContractWrite({
     contractName: "Unit",
     functionName: "withdrawEarnings",
-    args: [token.address]
+    args: [earning.token]
   })
+
+  
+  if(!isFetching) {
+    console.log("earnings: ", earnings)
+  } else {
+    console.log("is fetching earnings...")
+  }
+ 
 
 
 
@@ -35,7 +69,7 @@ const Earning = (token: EarningParams) => {
     return (
       <div className="flex flex-wrap items-center justify-between">
     
-      {token.address === ETH_ADDRESS? <p>{ethers.utils.formatEther(earnings)} ETH</p> : <TokenPrice price={earnings} token={token.address} /> }
+      {earning.token === ETH_ADDRESS? <p>{ethers.utils.formatEther(earnings)} ETH</p> : <TokenPrice price={earnings} token={earning.token} /> }
 
 <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={withdraw}>Withdraw</button>
 
@@ -89,7 +123,7 @@ export default () => {
               leaveTo="transform scale-95 opacity-0"
             >
             <Popover.Panel className="absolute top-2 bg-white rounded-lg p-2 text-black min-w-[200px]">
-              {isLoading? <Spinner width="20px" height="20px" /> : userEarnings}
+              {isLoading? <Spinner width="20px" height="20px" /> : earnings?.length > 0 ? earnings.map(item => <Earning key={item.address} earning={item} />) : <p className="text-black text-lg">No Earnings</p> }
             </Popover.Panel>
           </Transition>
         </Popover>
