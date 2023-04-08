@@ -17,7 +17,7 @@ import {ApolloProvider, ApolloClient, InMemoryCache, gql} from "@apollo/client"
 
 export const apolloClient = new ApolloClient({
   cache: new InMemoryCache(),
-  uri: "https://api.studio.thegraph.com/query/44750/unit/0.0.6"
+  uri: "https://api.studio.thegraph.com/query/44750/unit/0.0.10"
 })
 
 const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {

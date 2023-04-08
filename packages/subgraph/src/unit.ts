@@ -276,9 +276,5 @@ export function handleEarningWithdrawn(event: EarningWithdrawnEvent): void {
 }
 
 export function handleFeeWithdrawn(event: FeeWithdrawnEvent): void {
-  let entity = new Fee(event.params.token);
-
-  entity.token = event.params.token;
-
-  entity.save();
+  store.remove("Fee", event.params.token.toHexString());
 }

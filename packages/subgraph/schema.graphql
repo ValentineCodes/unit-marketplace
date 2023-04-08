@@ -1,10 +1,10 @@
-type Earning @entity(immutable: true) {
+type Earning @entity {
   id: Bytes!
   owner: Bytes!
   token: Bytes!
 }
 
-type Fee @entity(immutable: true) {
+type Fee @entity {
   id: Bytes!
   token: Bytes! # address
 }
