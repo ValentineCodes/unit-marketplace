@@ -4,8 +4,8 @@ import { Fragment, useState, useCallback, useEffect} from "react";
 import { InputBase } from "../scaffold-eth";
 import { BigNumber, ethers } from "ethers";
 import DeadlineInput from "./DeadlineInput";
-import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-import { usePrepareContractWrite, useContractWrite, erc20ABI, useAccount, useContractRead } from "wagmi";
+import { useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth";
+import { usePrepareContractWrite, useContractWrite, erc20ABI, useAccount, useContractRead, useWaitForTransaction } from "wagmi";
 import deployedContracts from "~~/generated/hardhat_contracts"
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
 import { Listing } from "../Listings";
@@ -53,7 +53,7 @@ const {data: allowance, refetch: refetchAllowance} = useContractRead({
   args: [connectedAccount, unit.address]
 })
 
- const { data, isLoading: isApproveLoading, isSuccess: isApprovalSuccessful, write: approve } = useContractWrite({
+ const { data: approveResult, isLoading: isApproveLoading, isSuccess: isApprovalSuccessful, writeAsync: approve } = useContractWrite({
     address: offer.token,
     abi: erc20ABI,
     functionName: 'approve',
@@ -67,25 +67,16 @@ const {data: allowance, refetch: refetchAllowance} = useContractRead({
     args: [listing.nft, listing.tokenId, offer.token, offer.amount, offer.deadline]
   })
 
-  const handleTx = () => {
-
-      if(allowance?.lt(BigNumber.from(offer.amount))) {
-        console.log("Approving token...")
-        approve()
-      } else {
-        console.log("Creating offer...")
-        createOffer()
-      }
-
-  }
-
-  useEffect(() => {
-    if(!isApprovalSuccessful) return 
-
-    notification.success("Approval successful")
-    refetchAllowance()
+  const writeTx = useTransactor()
   
-  }, [isApprovalSuccessful])
+const handleTx = async () => {
+  if(allowance){
+    if(allowance.lt(BigNumber.from(offer.amount))){
+        await writeTx(approve())
+    }
+    createOffer()
+  }
+}
 
     return (
         <Transition appear show={isOpen} as={Fragment}>

@@ -12,10 +12,12 @@ import { ERC721ABI } from "~~/utils/abis"
 import { ETH_ADDRESS } from "~~/utils/constants"
 import moment from "moment"
 import TokenPrice from "../TokenPrice"
-import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth"
+import { useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth"
 import Offers from "../Offers"
 import { isENS } from "~~/utils/helperFunctions"
 import deployedContracts from "~~/generated/hardhat_contracts"
+
+const targetNetwork = getTargetNetwork()
 interface Props {
     listing: Listing;
 }
@@ -65,7 +67,7 @@ export default ({listing}: Props ) => {
         toggleUpdatePrice()
     }
 
-    const targetNetwork = getTargetNetwork()
+   
 
 const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
 
@@ -76,7 +78,7 @@ const {data: allowance} = useContractRead({
   args: [address, unit.address]
 })
 
- const { data, isLoading: isApproveLoading, isSuccess: isApprovalSuccessful, write: approve } = useContractWrite({
+ const { data, isLoading: isApproveLoading, isSuccess: isApprovalSuccessful, writeAsync: approve } = useContractWrite({
     address: listing.token,
     abi: erc20ABI,
     functionName: 'approve',
@@ -114,27 +116,20 @@ const {data: allowance} = useContractRead({
         // }
     })
 
+    const writeTx = useTransactor()
+
     const purchase = async () => {
         if(listing.token === ETH_ADDRESS) {
             buy()
         } else {
-            if(allowance?.lt(BigNumber.from(listing.price))){
-                console.log("Approving token")
-                approve()
-            } else {
+            if(allowance){
+                if(allowance?.lt(BigNumber.from(listing.price))){
+                     await writeTx(approve())
+                }
                 buyWithToken()
             }
-            
         }
     }
-
-    useEffect(() => {
-        if(!isApprovalSuccessful) return
-
-        notification.success("Approval successful")
-        buyWithToken()
-
-    }, [isApprovalSuccessful])
 
     const updateUI = async () => {
         try{

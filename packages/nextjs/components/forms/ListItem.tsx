@@ -5,9 +5,10 @@ import { InputBase } from "../scaffold-eth";
 import { BigNumber, ethers } from "ethers";
 import DeadlineInput from "./DeadlineInput";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
-import { usePrepareContractWrite, useContractWrite, erc721ABI, useContractRead } from "wagmi";
+import { useContractWrite, erc721ABI, useContractRead, useProvider } from "wagmi";
 import deployedContracts from "~~/generated/hardhat_contracts"
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
+import { useTransactor } from "~~/hooks/scaffold-eth";
 
 type Item = {
   nft: string;
@@ -46,6 +47,7 @@ const multiplyBy1e18 = useCallback(() => {
   handleItemValueChange("price", ethers.utils.parseEther(item.price.toString()));
 }, [item.price]);
 
+const writeTx = useTransactor()
 const targetNetwork = getTargetNetwork()
 const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
 
@@ -56,7 +58,7 @@ const {data: approvedSpender, refetch: refetchApprovedSpender} = useContractRead
   args: [item.tokenId]
 })
 
- const { data, isLoading: isApproveLoading, write: approve, isSuccess: isApprovalSuccessful } = useContractWrite({
+ const { data, isLoading: isApproveLoading, writeAsync: approve, isSuccess: isApprovalSuccessful } = useContractWrite({
   address: item.nft,
   abi: erc721ABI,
   functionName: 'approve',
@@ -76,7 +78,6 @@ const {data: approvedSpender, refetch: refetchApprovedSpender} = useContractRead
     args: [item.nft, item.tokenId, item.token, item.price, item.auction, item.deadline]
   })
 
-
   const handleListing = () => {
     if(isTokenPrice) {
       listWithToken()
@@ -86,21 +87,14 @@ const {data: approvedSpender, refetch: refetchApprovedSpender} = useContractRead
   }
 
 
-  const handleTx = () => {
+  const handleTx = async () => {
       if(isApproveLoading) return 
 
       if(approvedSpender !== unit.address) {
-        approve()
-      } else {
-        handleListing()
+          await writeTx(approve())
       }
+      handleListing()
   }
-
-  useEffect(() => {
-    if(isApprovalSuccessful) {
-      refetchApprovedSpender()
-    }
-  }, [isApprovalSuccessful])
 
     return (
         <Transition appear show={isOpen} as={Fragment}>

@@ -64,7 +64,7 @@ const Offer = ({offer, canAccept}: OfferProps) => {
             </div>
 
             <div className="flex justify-between items-center">
-                <p className="text-black">Expiration: {moment(new Date(Number(offer.deadline) * 1000)).fromNow()}</p>
+                <p className="text-black">Expires {moment(new Date(Number(offer.deadline) * 1000)).fromNow()}</p>
                 {canAccept? <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={acceptOffer}>Accept</button> : isConnected && address?.toLowerCase() === offer.owner.toLowerCase()? (
                          <Popover className="relative">
                         <Popover.Button><EllipsisHorizontalIcon className="w-8 bg-black/80 text-white rounded-lg" /></Popover.Button>
