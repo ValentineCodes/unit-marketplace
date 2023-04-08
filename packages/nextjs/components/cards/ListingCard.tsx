@@ -176,10 +176,10 @@ export default ({listing}: Props ) => {
 
             {/* Modals  */}
             
-<Offers isOpen={showOffers} toggleVisibility={toggleShowOffers} listing={listing} canAcceptOffer={isConnected && listing.owner.toLowerCase() === address?.toLowerCase()} />
-<UpdateSeller isOpen={updateSeller} toggleVisibility={toggleUpdateSeller} listing={listing} />
-<UpdatePrice action={action} isOpen={updatePrice} toggleVisibility={toggleUpdatePrice} listing={listing} />
-<ExtendDeadline isOpen={extendDeadline} toggleVisibility={toggleExtendDeadline} listing={listing} />
+{showOffers && <Offers isOpen={showOffers} toggleVisibility={toggleShowOffers} listing={listing} canAcceptOffer={isConnected && listing.owner.toLowerCase() === address?.toLowerCase()} />}
+{updateSeller && <UpdateSeller isOpen={updateSeller} toggleVisibility={toggleUpdateSeller} listing={listing} />}
+{updatePrice && <UpdatePrice action={action} isOpen={updatePrice} toggleVisibility={toggleUpdatePrice} listing={listing} />}
+{extendDeadline && <ExtendDeadline isOpen={extendDeadline} toggleVisibility={toggleExtendDeadline} listing={listing} />}
         </div>
     )
 }

@@ -56,8 +56,6 @@ const Offer = ({offer, canAccept}: OfferProps) => {
         cacheTime: 30_000
     })
 
-    console.log(address, " - ", offer.owner)
-
     return (
         <div className="px-2 py-1 border-b-2">
             <div className="flex justify-between items-center text-sm">

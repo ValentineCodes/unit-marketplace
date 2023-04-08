@@ -129,16 +129,12 @@ export function handleItemBought(event: ItemBoughtEvent): void {
   const listingId = computeItemId(event.params.nft, event.params.tokenId);
   let listing = Listing.load(listingId);
 
-  let earnings = Earning.load(
-    listing!.owner.concatI32(event.params.token.toI32())
-  );
+  let earnings = Earning.load(listing!.owner.concat(event.params.token));
 
   let fees = Fee.load(event.params.token);
 
   if (!earnings) {
-    earnings = new Earning(
-      listing!.owner.concatI32(event.params.token.toI32())
-    );
+    earnings = new Earning(listing!.owner.concat(event.params.token));
 
     earnings.owner = listing!.owner;
     earnings.token = event.params.token;
@@ -183,16 +179,12 @@ export function handleOfferAccepted(event: OfferAcceptedEvent): void {
     computeItemId(event.params.nft, event.params.tokenId)
   );
 
-  let earnings = Earning.load(
-    listing!.owner.concatI32(event.params.token.toI32())
-  );
+  let earnings = Earning.load(listing!.owner.concat(event.params.token));
 
   let fees = Fee.load(event.params.token);
 
   if (!earnings) {
-    earnings = new Earning(
-      listing!.owner.concatI32(event.params.token.toI32())
-    );
+    earnings = new Earning(listing!.owner.concat(event.params.token));
 
     earnings.owner = listing!.owner;
     earnings.token = event.params.token;
@@ -271,7 +263,7 @@ export function handleOfferRemoved(event: OfferRemovedEvent): void {
 export function handleEarningWithdrawn(event: EarningWithdrawnEvent): void {
   store.remove(
     "Earning",
-    event.params.owner.concatI32(event.params.token.toI32()).toHexString()
+    event.params.owner.concat(event.params.token).toHexString()
   );
 }
 
