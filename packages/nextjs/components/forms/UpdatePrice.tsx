@@ -15,6 +15,7 @@ interface Props {
 }
 export default ({action, isOpen, toggleVisibility, listing }: Props) => {
   const [price, setPrice] = useState<string | BigNumber>("");
+  const [useCurrentPrice, setUseCurrentPrice] = useState(false)
 
   const {writeAsync: updatePrice, isLoading: isUpdatingPrice} = useScaffoldContractWrite({
     contractName: "Unit",
@@ -25,13 +26,13 @@ export default ({action, isOpen, toggleVisibility, listing }: Props) => {
   const {writeAsync: enableAuction, isLoading: isEnablingAuction} = useScaffoldContractWrite({
     contractName: "Unit",
     functionName: "enableAuction",
-    args: [listing.nft, listing.tokenId, price]
+    args: [listing.nft, listing.tokenId, useCurrentPrice? ethers.utils.parseEther("0") : price]
   })
 
   const {writeAsync: disableAuction, isLoading: isDisablingAuction} = useScaffoldContractWrite({
     contractName: "Unit",
     functionName: "disableAuction",
-    args: [listing.nft, listing.tokenId, price]
+    args: [listing.nft, listing.tokenId, useCurrentPrice? ethers.utils.parseEther("0") : price]
   })
 
   const handleTx = () => {
@@ -89,11 +90,19 @@ export default ({action, isOpen, toggleVisibility, listing }: Props) => {
                         </button>
                       </div>
                     )}
+                  disabled={useCurrentPrice}
                 />
 
-                <button className={`btn btn-secondary btn-sm mt-4 ${isUpdatingPrice || isEnablingAuction || isDisablingAuction ? "loading" : ""}`} disabled={!Boolean(price)} onClick={handleTx}>
+                <button className={`btn btn-secondary btn-sm mt-4 ${isUpdatingPrice || isEnablingAuction || isDisablingAuction ? "loading" : ""}`} onClick={handleTx}>
                     {!isUpdatingPrice && !isEnablingAuction && !isDisablingAuction  && "Send 💸"}
                 </button>
+                {(action === "enableAuction" || action === "disableAuction") && (
+                  <div className="ml-4 inline-block">
+                    <input type="checkbox" id="useCurrentPrice" name="useCurrentPrice" checked={useCurrentPrice} onChange={(e) => setUseCurrentPrice(!useCurrentPrice)} />
+                    <label htmlFor="useCurrentPrice" className="text-black ml-2">Use current price</label>
+                  </div>
+                )}
+               
               </Dialog.Panel>
             </Transition.Child>
           </div>
