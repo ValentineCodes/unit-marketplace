@@ -27,7 +27,7 @@ const computeOfferId = (
   nft: Address,
   tokenId: BigInt
 ): Bytes => {
-  return owner.concatI32(nft.toI32()).concatI32(tokenId.toI32());
+  return owner.concat(nft).concatI32(tokenId.toI32());
 };
 
 export function handleItemListed(event: ItemListedEvent): void {
