@@ -7,7 +7,7 @@ import DeadlineInput from "./DeadlineInput";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { usePrepareContractWrite, useContractWrite, erc721ABI, useContractRead } from "wagmi";
 import deployedContracts from "~~/generated/hardhat_contracts"
-import { getTargetNetwork } from "~~/utils/scaffold-eth";
+import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
 
 type Item = {
   nft: string;
@@ -79,11 +79,7 @@ const { config: approveConfig } = usePrepareContractWrite({
   console.log("approve loading: ", isApproveLoading)
   console.log("approve success: ", isApprovalSuccessful)
 
-  const handleApproval = () => {
-    if(!isApproveLoading && approvedSpender !== unit.address) {
-      approve() 
-    }
-  }
+
   const handleListing = () => {
     if(isTokenPrice) {
       listWithToken()
@@ -94,15 +90,19 @@ const { config: approveConfig } = usePrepareContractWrite({
 
 
   const handleTx = () => {
-    // Approve unit to spend item if not already approved
-    // list item
 
-  
+      if(approvedSpender !== unit.address) {
+        approve()
+      } else {
+        handleListing()
+      }
+
   }
 
   useEffect(() => {
     if(!isApprovalSuccessful) return 
 
+    notification.success("Approval successful")
   
   }, [isApprovalSuccessful])
 

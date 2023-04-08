@@ -108,7 +108,7 @@ const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         apolloClient.query({
-            query: getOffers(listing.nft, listing.tokenId)
+            query: getOffers(listing)
         }).then(result => {
             setOffers(result.data.offers)
         }).catch(error => {

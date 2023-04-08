@@ -1,9 +1,10 @@
 import { gql } from "@apollo/client";
+import { Listing } from "~~/components/Listings";
 
 export const getListings = () => {
   return gql`
     {
-      listings {
+      listings(where: {deadline_gt: "${Math.floor(Date.now() / 1000)}"}) {
         id
         owner
         nft
@@ -17,11 +18,10 @@ export const getListings = () => {
   `;
 };
 
-export const getOffers = (nft: string, tokenId: string) => {
-  // TO-DO: deadline must be > current time
+export const getOffers = (listing: Listing) => {
   return gql`
     {
-      offers(where: {nft: "${nft}", tokenId: "${tokenId}"}) {
+      offers(where: {nft: "${listing.nft}", tokenId: "${listing.tokenId}", deadline_lte: "${listing.deadline}" }) {
         id
         owner
         nft
