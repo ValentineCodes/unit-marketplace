@@ -21,6 +21,6 @@ export default ({price, token}: Props) => {
 
     
     return (
-        <>{!isFetching && price && token && <p className="text-sm text-black font-semibold">{ethers.utils.formatEther(price)} {symbol}</p>}</>
+        <>{!isFetching && price && token && <p className="text-sm text-gray-500">{ethers.utils.formatEther(price)} {symbol}</p>}</>
     )
 }

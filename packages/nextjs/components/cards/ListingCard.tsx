@@ -4,8 +4,8 @@ import { useState, useEffect } from "react"
 import UpdateSeller from "../forms/UpdateSeller"
 import UpdatePrice, { Action } from "../forms/UpdatePrice"
 import ExtendDeadline from "../forms/ExtendDeadline"
-import { ethers } from "ethers"
-import { useAccount, useContractRead, useEnsAddress } from "wagmi"
+import { BigNumber, ethers } from "ethers"
+import { erc20ABI, useAccount, useContractRead, useContractWrite, useEnsAddress } from "wagmi"
 import { Listing } from "../Listings"
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth"
 import { ERC721ABI } from "~~/utils/abis"
@@ -15,6 +15,7 @@ import TokenPrice from "../TokenPrice"
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth"
 import Offers from "../Offers"
 import { isENS } from "~~/utils/helperFunctions"
+import deployedContracts from "~~/generated/hardhat_contracts"
 interface Props {
     listing: Listing;
 }
@@ -64,6 +65,25 @@ export default ({listing}: Props ) => {
         toggleUpdatePrice()
     }
 
+    const targetNetwork = getTargetNetwork()
+
+const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
+
+const {data: allowance} = useContractRead({
+  address: listing.token,
+  abi: erc20ABI,
+  functionName: "allowance",
+  args: [address, unit.address]
+})
+
+ const { data, isLoading: isApproveLoading, isSuccess: isApprovalSuccessful, write: approve } = useContractWrite({
+    address: listing.token,
+    abi: erc20ABI,
+    functionName: 'approve',
+    args: [unit.address, BigNumber.from(listing.price || 0)],
+    mode: "recklesslyUnprepared"
+ })
+
     const {writeAsync: unlist, isLoading: isUnlisting} = useScaffoldContractWrite({
         contractName: "Unit",
         functionName: "unlistItem",
@@ -89,28 +109,50 @@ export default ({listing}: Props ) => {
         abi: ERC721ABI,
         functionName: "tokenURI",
         args: [Number(listing.tokenId)],
-        onError: error => {
-            notification.error(error.message)
-        }
+        // onError: error => {
+        //     notification.error(error.message)
+        // }
     })
 
     const purchase = async () => {
         if(listing.token === ETH_ADDRESS) {
             buy()
         } else {
-            buyWithToken()
+            if(allowance?.lt(BigNumber.from(listing.price))){
+                console.log("Approving token")
+                approve()
+            } else {
+                buyWithToken()
+            }
+            
         }
     }
 
+    useEffect(() => {
+        if(!isApprovalSuccessful) return
+
+        notification.success("Approval successful")
+        buyWithToken()
+
+    }, [isApprovalSuccessful])
+
     const updateUI = async () => {
+        try{
+            console.log("tokenuri: ", tokenURI)
         const _tokenURI = tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/")
         const token = await (await fetch(_tokenURI)).json()
 
         if(token) {
             const imageURI = token.image.replace("ipfs://", "https://ipfs.io/ipfs/")
+            console.log("image: ", imageURI)
             const actualToken = {...token, image: imageURI}
             setToken(actualToken)
+            console.log("Token: ", actualToken)
         }
+    } catch(error) {
+        console.log("error")
+        console.log(error)
+    }
     }
     
 

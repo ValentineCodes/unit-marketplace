@@ -49,14 +49,14 @@ const multiplyBy1e18 = useCallback(() => {
 const targetNetwork = getTargetNetwork()
 const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
 
-const {data: approvedSpender} = useContractRead({
+const {data: approvedSpender, refetch: refetchApprovedSpender} = useContractRead({
   address: item.nft,
   abi: erc721ABI,
   functionName: "getApproved",
   args: [item.tokenId]
 })
 
- const { data, isLoading: isApproveLoading, write: approve } = useContractWrite({
+ const { data, isLoading: isApproveLoading, write: approve, isSuccess: isApprovalSuccessful } = useContractWrite({
   address: item.nft,
   abi: erc721ABI,
   functionName: 'approve',
@@ -94,8 +94,13 @@ const {data: approvedSpender} = useContractRead({
       } else {
         handleListing()
       }
-
   }
+
+  useEffect(() => {
+    if(isApprovalSuccessful) {
+      refetchApprovedSpender()
+    }
+  }, [isApprovalSuccessful])
 
     return (
         <Transition appear show={isOpen} as={Fragment}>

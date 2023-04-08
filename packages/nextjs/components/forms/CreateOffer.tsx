@@ -46,7 +46,7 @@ const targetNetwork = getTargetNetwork()
 
 const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
 
-const {data: allowance} = useContractRead({
+const {data: allowance, refetch: refetchAllowance} = useContractRead({
   address: offer.token,
   abi: erc20ABI,
   functionName: "allowance",
@@ -83,7 +83,7 @@ const {data: allowance} = useContractRead({
     if(!isApprovalSuccessful) return 
 
     notification.success("Approval successful")
-    createOffer()
+    refetchAllowance()
   
   }, [isApprovalSuccessful])
 
