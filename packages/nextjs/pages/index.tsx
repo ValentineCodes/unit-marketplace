@@ -16,7 +16,7 @@ import { useAccount } from "wagmi";
 
 const Home: NextPage = () => {
   const [showListItem, setShowListItem] = useState(false)
-  const {data: unitOwner} = useScaffoldContractRead({
+  const {data: unitOwner}: {data: string} = useScaffoldContractRead({
     contractName: "Unit",
     functionName: "owner"
   })
@@ -37,7 +37,7 @@ const Home: NextPage = () => {
       <div className="flex flex-wrap gap-5 items-center justify-between px-5 py-3 border-b border-white/30">
         <div className="flex items-center space-x-4">
           <Earnings />
-         {isConnected && address === unitOwner && <Fees /> }
+         {isConnected && address?.toLowerCase() === unitOwner?.toLowerCase() && <Fees /> }
         </div>
 
         <div className="space-x-4">

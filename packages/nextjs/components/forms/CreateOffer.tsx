@@ -67,10 +67,6 @@ const {data: allowance} = useContractRead({
     args: [listing.nft, listing.tokenId, offer.token, offer.amount, offer.deadline]
   })
 
-  console.log("approve loading: ", isApproveLoading)
-  console.log("approve success: ", isApprovalSuccessful)
-
-
   const handleTx = () => {
 
       if(allowance?.lt(BigNumber.from(offer.amount))) {

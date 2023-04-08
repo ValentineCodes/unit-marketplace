@@ -56,16 +56,18 @@ const Offer = ({offer, canAccept}: OfferProps) => {
         cacheTime: 30_000
     })
 
+    console.log(address, " - ", offer.owner)
+
     return (
-        <div className="px-2 py-1">
+        <div className="px-2 py-1 border-b-2">
             <div className="flex justify-between items-center text-sm">
-               {!isOfferOwnerLoading && <p>Owned by {offerOwner}</p> }
-                {offer.token === ETH_ADDRESS?  <p className="text-gray-500">{ethers.utils.formatEther(offer.amount)} ETH</p> : <TokenPrice price={offer.amount} token={offer.token} />}
+               {!isOfferOwnerLoading && <p className="text-black">Owned by {!offerOwner && `${offer.owner.slice(0, 6) + "..." + offer.owner.slice(-4)}`}</p> }
+                {offer.token === ETH_ADDRESS?  <p className="text-black font-bold">{ethers.utils.formatEther(offer.amount)} ETH</p> : <TokenPrice price={offer.amount} token={offer.token} />}
             </div>
 
             <div className="flex justify-between items-center">
-                <p>Expiration: {moment(new Date(Number(offer.deadline) * 1000)).fromNow()}</p>
-                {canAccept? <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={acceptOffer}>Accept</button> : (
+                <p className="text-black">Expiration: {moment(new Date(Number(offer.deadline) * 1000)).fromNow()}</p>
+                {canAccept? <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={acceptOffer}>Accept</button> : isConnected && address?.toLowerCase() === offer.owner.toLowerCase()? (
                          <Popover className="relative">
                          <Popover.Button><EllipsisHorizontalIcon className="w-8 bg-black/80 text-white rounded-lg" /></Popover.Button>
                              <Transition
@@ -77,19 +79,13 @@ const Offer = ({offer, canAccept}: OfferProps) => {
                                  leaveTo="transform scale-95 opacity-0"
                              >
                              <Popover.Panel as="ul" className="absolute bg-white rounded-lg text-black min-w-[200px] border shadow-md font-normal">
- 
-                                     <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer">Offers</li>
-                                     {isConnected && address === offer.owner && (
-                                         <>
                                              <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleExtendDeadline}>Extend deadline</li>
                                              <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={removeOffer}>Remove</li>
-                                         </>
-                                     )}
  
                              </Popover.Panel>
                          </Transition>
                      </Popover>
-                )  }
+                ) : null  }
             </div>
 
             <ExtendOfferDeadline isOpen={extendDeadline} toggleVisibility={toggleExtendDeadline} offer={offer} />

@@ -142,8 +142,8 @@ export default ({listing}: Props ) => {
                             <Popover.Panel as="ul" className="absolute bg-white rounded-lg text-black min-w-[200px] border shadow-md font-normal">
 
                                     <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleShowOffers}>Offers</li>
-                                    {isConnected && address !== listing.owner && !listing.auction && <li className="px-4 py-2 bg-green-500 text-white cursor-pointer" onClick={purchase}>Purchase</li>}
-                                    {isConnected && address === listing.owner && (
+                                    {isConnected && address?.toLowerCase() !== listing.owner.toLowerCase() && !listing.auction && <li className="px-4 py-2 bg-green-500 text-white cursor-pointer" onClick={purchase}>Purchase</li>}
+                                    {isConnected && address?.toLowerCase() === listing.owner.toLowerCase() && (
                                         <>
                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleUpdateSeller}>Update seller</li>
                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handlePriceUpdate}>Update price</li>
@@ -176,7 +176,7 @@ export default ({listing}: Props ) => {
 
             {/* Modals  */}
             
-<Offers isOpen={showOffers} toggleVisibility={toggleShowOffers} listing={listing} canAcceptOffer={isConnected && listing.owner === address} />
+<Offers isOpen={showOffers} toggleVisibility={toggleShowOffers} listing={listing} canAcceptOffer={isConnected && listing.owner.toLowerCase() === address?.toLowerCase()} />
 <UpdateSeller isOpen={updateSeller} toggleVisibility={toggleUpdateSeller} listing={listing} />
 <UpdatePrice action={action} isOpen={updatePrice} toggleVisibility={toggleUpdatePrice} listing={listing} />
 <ExtendDeadline isOpen={extendDeadline} toggleVisibility={toggleExtendDeadline} listing={listing} />
