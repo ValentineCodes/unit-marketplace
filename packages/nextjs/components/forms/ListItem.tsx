@@ -87,6 +87,7 @@ const {data: approvedSpender} = useContractRead({
 
 
   const handleTx = () => {
+      if(isApproveLoading) return 
 
       if(approvedSpender !== unit.address) {
         approve()

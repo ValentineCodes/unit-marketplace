@@ -77,7 +77,7 @@ export default ({action, isOpen, toggleVisibility, listing }: Props) => {
                 <InputBase
                   name="updatePrice"
                   value={price}
-                  placeholder="New price in wei"
+                  placeholder={action === "enableAuction"? "Starting price in wei" : "New price in wei"}
                   onChange={setPrice}
                   suffix={(
                       <div

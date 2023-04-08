@@ -159,7 +159,7 @@ export default ({listing}: Props ) => {
                 </div>
 
                 {/* <p className="text-sm">Owner {listing.owner.slice(0, 6)}...{listing.owner.slice(-4)}</p> */}
-                {!isListingOwnerLoading && <p className="text-sm">Owned by {!listingOwner && `${listing.owner.slice(0, 6) + "..." + listing.owner.slice(-4)}`}</p>}
+                {!isListingOwnerLoading && <p className="text-sm">Owned by {isConnected && listing.owner.toLowerCase() === address?.toLowerCase()? "me": !listingOwner && `${listing.owner.slice(0, 6) + "..." + listing.owner.slice(-4)}`}</p>}
 
                 <div className="flex items-center justify-between">
                     <div className="-space-y-1">
