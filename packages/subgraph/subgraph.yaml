@@ -34,9 +34,9 @@ dataSources:
           file: ./abis/Unit.json
       eventHandlers:
         - event: EarningsWithdrawn(indexed address,indexed address,indexed uint256)
-          handler: handleEarningsWithdrawn
+          handler: handleEarningWithdrawn
         - event: FeesWithdrawn(indexed address,indexed address,indexed uint256)
-          handler: handleFeesWithdrawn
+          handler: handleFeeWithdrawn
         - event: ItemAuctionDisabled(address,uint256,uint256)
           handler: handleItemAuctionDisabled
         - event: ItemAuctionEnabled(address,uint256,uint256)
