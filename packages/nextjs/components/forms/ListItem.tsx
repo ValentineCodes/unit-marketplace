@@ -56,13 +56,13 @@ const {data: approvedSpender} = useContractRead({
   args: [item.tokenId]
 })
 
-const { config: approveConfig } = usePrepareContractWrite({
+ const { data, isLoading: isApproveLoading, write: approve } = useContractWrite({
   address: item.nft,
   abi: erc721ABI,
   functionName: 'approve',
-  args: [unit.address, item.tokenId]
+  args: [unit.address, item.tokenId],
+  mode: "recklesslyUnprepared"
  })
- const { data, isLoading: isApproveLoading, isSuccess: isApprovalSuccessful, write: approve } = useContractWrite(approveConfig)
 
   const {writeAsync: list, isLoading: isListing} = useScaffoldContractWrite({
     contractName: "Unit",
@@ -75,9 +75,6 @@ const { config: approveConfig } = usePrepareContractWrite({
     functionName: "listItemWithToken",
     args: [item.nft, item.tokenId, item.token, item.price, item.auction, item.deadline]
   })
-
-  console.log("approve loading: ", isApproveLoading)
-  console.log("approve success: ", isApprovalSuccessful)
 
 
   const handleListing = () => {
@@ -98,13 +95,6 @@ const { config: approveConfig } = usePrepareContractWrite({
       }
 
   }
-
-  useEffect(() => {
-    if(!isApprovalSuccessful) return 
-
-    notification.success("Approval successful")
-  
-  }, [isApprovalSuccessful])
 
     return (
         <Transition appear show={isOpen} as={Fragment}>

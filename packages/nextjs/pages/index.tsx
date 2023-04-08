@@ -41,7 +41,7 @@ const Home: NextPage = () => {
         </div>
 
         <div className="space-x-4">
-          <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-4 py-1 text-lg">My Items</button>
+          {/* <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-4 py-1 text-lg">My Items</button> */}
           <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-4 py-1 text-lg" onClick={toggleListItem}>List Item</button>
         </div>
       </div>

@@ -14,6 +14,7 @@ import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { isENS } from "~~/utils/helperFunctions";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import ExtendOfferDeadline from "./forms/ExtendOfferDeadline";
+import CreateOffer from "./forms/CreateOffer";
 
 export type OfferParams = {
     id: string;
@@ -105,6 +106,11 @@ interface Props {
 export default ({isOpen, toggleVisibility, listing, canAcceptOffer}: Props) => {
 const [offers, setOffers] = useState<OfferParams[]>()
 const [isLoading, setIsLoading] = useState(true)
+const [createOffer, setCreateOffer] = useState(false)
+
+const toggleCreateOffer = () => {
+    setCreateOffer(current => !current)
+}
 
     useEffect(() => {
         apolloClient.query({
@@ -148,13 +154,18 @@ const [isLoading, setIsLoading] = useState(true)
                   >
                     <h3>Offers</h3>
 
-                    <XCircleIcon className="text-black hover:text-[red] transition-colors duration-300 cursor-pointer  w-10" onClick={toggleVisibility} />
+                    <div className="flex items-center space-x-4">
+                        <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-4 py-1 text-lg" onClick={toggleCreateOffer}>Make an offer</button>
+                        <XCircleIcon className="text-black hover:text-[red] transition-colors duration-300 cursor-pointer  w-10" onClick={toggleVisibility} />
+                    </div>
                   </Dialog.Title>
 
                   {isLoading? <Spinner width="20px" height="20px" /> : listingOffers}
                 </Dialog.Panel>
               </Transition.Child>
             </div>
+
+            {createOffer && <CreateOffer isOpen={createOffer} toggleVisibility={toggleCreateOffer} listing={listing} />}
           </div>
         </Dialog>
       </Transition>

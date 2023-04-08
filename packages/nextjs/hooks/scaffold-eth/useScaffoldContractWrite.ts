@@ -45,7 +45,6 @@ export const useScaffoldContractWrite = <
   });
 
   const sendContractWriteTx = async () => {
-    console.log("deployed contract: ", deployedContractData);
     if (!deployedContractData) {
       notification.error("Target Contract is not deployed, did you forget to run `yarn deploy`?");
       return;

@@ -14,10 +14,10 @@ const deployMocks: DeployFunction = async () => {
     log: true,
   });
 
-  await deploy("Ogre", {
-    from: tokenHolder,
-    log: true,
-  });
+  // await deploy("Ogre", {
+  //   from: tokenHolder,
+  //   log: true,
+  // });
 
   log("Mocks Deployed!✅\n");
   // }
