@@ -29,7 +29,7 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Scaffold-eth App</title>
+        <title>Unit - NFT Marketplace</title>
         <meta name="description" content="Created with 🏗 scaffold-eth" />
       </Head>
 
