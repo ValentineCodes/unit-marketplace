@@ -40,7 +40,7 @@ export default ({isOpen, toggleVisibility, listing}: Props) => {
 
                             <DeadlineInput name="extendDeadline" placeholder="Extra time" onChange={setExtraTime} />
                             <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(extraTime)} onClick={writeAsync}>
-                               {!isLoading && "Send 💸"}
+                               {!isLoading && "Extend 💸"}
                             </button>
                         </Dialog.Panel>
                     </Transition.Child>
