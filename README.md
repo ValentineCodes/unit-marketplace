@@ -1,6 +1,6 @@
 # 🌛Unit - NFT Marketplace🌜
 
-[Unit](https://unit-valentinecodes.vercel.app/) is a Decentralized NFT Marketplace. It allows NFT owners to list their NFTs for a fixed price or put them up for auction. A seller can also toggle between fixed price listing and auction at any time.
+[Unit](https://unit-mu.vercel.app/) is a Decentralized NFT Marketplace. It allows NFT owners to list their NFTs for a fixed price or put them up for auction. A seller can also toggle between fixed price listing and auction at any time.
 
 ## How it works
 
