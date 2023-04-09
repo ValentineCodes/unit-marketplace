@@ -94,7 +94,7 @@ export default ({action, isOpen, toggleVisibility, listing }: Props) => {
                 />
 
                 <button className={`btn btn-secondary btn-sm mt-4 ${isUpdatingPrice || isEnablingAuction || isDisablingAuction ? "loading" : ""}`} onClick={handleTx}>
-                    {!isUpdatingPrice && !isEnablingAuction && !isDisablingAuction  && "Send 💸"}
+                    {!isUpdatingPrice && !isEnablingAuction && !isDisablingAuction  && "Update 💸"}
                 </button>
                 {(action === "enableAuction" || action === "disableAuction") && (
                   <div className="ml-4 inline-block">
