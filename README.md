@@ -38,4 +38,3 @@ yarn start
 # Acknowledgements
 
 - [ScaffoldETH V2](https://github.com/scaffold-eth/se-2)
-- [Patrick Collins | FreeCodeCamp](https://github.com/smartcontractkit/full-blockchain-solidity-course-js)
