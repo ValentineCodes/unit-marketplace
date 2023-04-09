@@ -15,6 +15,7 @@ import { isENS } from "~~/utils/helperFunctions";
 import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import ExtendOfferDeadline from "./forms/ExtendOfferDeadline";
 import CreateOffer from "./forms/CreateOffer";
+import Link from "next/link";
 
 export type OfferParams = {
     id: string;
@@ -59,7 +60,7 @@ const Offer = ({offer, canAccept}: OfferProps) => {
     return (
         <div className="px-2 py-1 border-b-2">
             <div className="flex justify-between items-center text-sm">
-               {!isOfferOwnerLoading && <p className="text-black">Owned by {!offerOwner && `${offer.owner.slice(0, 6) + "..." + offer.owner.slice(-4)}`}</p> }
+               {!isOfferOwnerLoading && <p className="text-black">Owned by {isConnected && offer.owner.toLowerCase() === address?.toLowerCase()? <strong>me</strong>: <Link href={`https://goerli.etherscan.io/address/${offer.owner}`} className="text-blue-400 font-semibold">{`${offer.owner.slice(0, 6) + "..." + offer.owner.slice(-4)}`}</Link>}</p> }
                 {offer.token === ETH_ADDRESS?  <p className="text-black font-bold">{ethers.utils.formatEther(offer.amount)} ETH</p> : <TokenPrice price={offer.amount} token={offer.token} />}
             </div>
 

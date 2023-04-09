@@ -16,6 +16,7 @@ import { useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth"
 import Offers from "../Offers"
 import { isENS } from "~~/utils/helperFunctions"
 import deployedContracts from "~~/generated/hardhat_contracts"
+import Link from "next/link"
 
 const targetNetwork = getTargetNetwork()
 interface Props {
@@ -196,7 +197,7 @@ const {data: allowance} = useContractRead({
                 </div>
 
                 {/* <p className="text-sm">Owner {listing.owner.slice(0, 6)}...{listing.owner.slice(-4)}</p> */}
-                {!isListingOwnerLoading && <p className="text-sm">Owned by {isConnected && listing.owner.toLowerCase() === address?.toLowerCase()? "me": !listingOwner && `${listing.owner.slice(0, 6) + "..." + listing.owner.slice(-4)}`}</p>}
+                {!isListingOwnerLoading && <p className="text-sm">Owned by {isConnected && listing.owner.toLowerCase() === address?.toLowerCase()? <strong>me</strong>: !listingOwner && <Link href={`https://goerli.etherscan.io/address/${listing.owner}`} className="text-blue-400 font-semibold">{`${listing.owner.slice(0, 6) + "..." + listing.owner.slice(-4)}`}</Link>}</p>}
 
                 <div className="flex items-center justify-between">
                     <div className="-space-y-1">
