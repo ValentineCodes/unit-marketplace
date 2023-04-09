@@ -1,11 +1,14 @@
+import { Fragment, useState } from "react";
 import { Transition, Dialog } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
-import { Fragment, useState } from "react";
+import { useContractWrite, useContractRead, erc721ABI } from "wagmi";
 import { InputBase } from "../scaffold-eth";
 import { Listing } from "../Listings";
-import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth";
+import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
+import deployedContracts from "~~/generated/hardhat_contracts";
 
-
+const targetNetwork = getTargetNetwork()
 interface Props {
     isOpen: boolean;
     toggleVisibility: () => void;
@@ -14,11 +17,39 @@ interface Props {
 export default ({isOpen, toggleVisibility, listing}: Props) => {
     const [seller, setSeller] = useState("")
 
-    const {writeAsync, isLoading} = useScaffoldContractWrite({
+    const writeTx = useTransactor()
+    
+    const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
+
+    const {data: approvedSpender, refetch: refetchApprovedSpender} = useContractRead({
+    address: listing.nft,
+    abi: erc721ABI,
+    functionName: "getApproved",
+    args: [listing.tokenId]
+    })
+
+    const { data, isLoading: isApproveLoading, writeAsync: approve, isSuccess: isApprovalSuccessful } = useContractWrite({
+    address: listing.nft,
+    abi: erc721ABI,
+    functionName: 'approve',
+    args: [unit.address, listing.tokenId],
+    mode: "recklesslyUnprepared"
+    })
+
+    const {writeAsync: updateSeller, isLoading} = useScaffoldContractWrite({
         contractName: "Unit",
         functionName: "updateItemSeller",
         args: [listing.nft, listing.tokenId, seller]
     })
+
+    const handleTx = async () => {
+        if(isApproveLoading) return
+
+        if(approvedSpender !== unit.address) {
+            await writeTx(approve())
+        }
+        updateSeller()
+    }
     return (
         <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-10" onClose={toggleVisibility}>
@@ -38,7 +69,7 @@ export default ({isOpen, toggleVisibility, listing}: Props) => {
 
                             <InputBase name="updateSeller" value={seller} placeholder="New seller address" onChange={setSeller} />
 
-                            <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(seller)} onClick={writeAsync}>
+                            <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(seller)} onClick={handleTx}>
                                {!isLoading && "Send 💸"}
                             </button>
                         </Dialog.Panel>

@@ -5,7 +5,7 @@ import UpdateSeller from "../forms/UpdateSeller"
 import UpdatePrice, { Action } from "../forms/UpdatePrice"
 import ExtendDeadline from "../forms/ExtendDeadline"
 import { BigNumber, ethers } from "ethers"
-import { erc20ABI, useAccount, useContractRead, useContractWrite, useEnsAddress } from "wagmi"
+import { erc20ABI, erc721ABI, useAccount, useContractRead, useContractWrite, useEnsAddress } from "wagmi"
 import { Listing } from "../Listings"
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth"
 import { ERC721ABI } from "~~/utils/abis"
@@ -79,6 +79,13 @@ const {data: allowance} = useContractRead({
   args: [address, unit.address]
 })
 
+const {data: itemOwner} = useContractRead({
+    address: listing.nft,
+    abi: erc721ABI,
+    functionName: "ownerOf",
+    args: [listing.tokenId]
+  })
+
  const { data, isLoading: isApproveLoading, isSuccess: isApprovalSuccessful, writeAsync: approve } = useContractWrite({
     address: listing.token,
     abi: erc20ABI,
@@ -151,7 +158,6 @@ const {data: allowance} = useContractRead({
     }
     }
     
-
     useEffect(() => {
         if(tokenURI) {
             updateUI()
@@ -180,10 +186,10 @@ const {data: allowance} = useContractRead({
                             <Popover.Panel as="ul" className="absolute bg-white rounded-lg text-black min-w-[200px] border shadow-md font-normal">
 
                                     <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleShowOffers}>Offers</li>
-                                    {isConnected && address?.toLowerCase() !== listing.owner.toLowerCase() && !listing.auction && <li className="px-4 py-2 bg-green-500 text-white cursor-pointer" onClick={purchase}>Purchase</li>}
+                                    {isConnected && itemOwner?.toLowerCase() === address?.toLowerCase() && itemOwner?.toLowerCase() !== listing.owner && <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleUpdateSeller}>Update seller</li>}
+                                    {isConnected && address?.toLowerCase() !== listing.owner.toLowerCase() && !listing.auction && <li className="px-4 py-2 bg-green-500 text-white cursor-pointer" onClick={purchase}>Purchase</li>}                                           
                                     {isConnected && address?.toLowerCase() === listing.owner.toLowerCase() && (
                                         <>
-                                            <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleUpdateSeller}>Update seller</li>
                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handlePriceUpdate}>Update price</li>
                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleExtendDeadline}>Extend deadline</li>
                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handleAuctionToggle}>{listing.auction ? "Disable": "Enable"} Auction</li>
