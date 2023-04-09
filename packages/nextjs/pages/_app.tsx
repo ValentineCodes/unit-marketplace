@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import type { AppProps } from "next/app";
+import {ApolloProvider, ApolloClient, InMemoryCache} from "@apollo/client"
 import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import NextNProgress from "nextjs-progressbar";
@@ -13,15 +14,14 @@ import { useAppStore } from "~~/services/store/store";
 import { wagmiClient } from "~~/services/web3/wagmiClient";
 import { appChains } from "~~/services/web3/wagmiConnectors";
 import "~~/styles/globals.css";
-import {ApolloProvider, ApolloClient, InMemoryCache, gql} from "@apollo/client"
+
 
 export const apolloClient = new ApolloClient({
   cache: new InMemoryCache(),
-  uri: "https://api.studio.thegraph.com/query/44750/unit/0.0.12"
-})
+  uri: "https://api.studio.thegraph.com/query/44750/unit/0.0.12",
+});
 
 const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
-
   const price = useEthPrice();
   const setEthPrice = useAppStore(state => state.setEthPrice);
 

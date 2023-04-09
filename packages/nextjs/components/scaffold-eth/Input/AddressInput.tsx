@@ -7,7 +7,6 @@ import { isENS } from "~~/utils/helperFunctions";
 
 // ToDo:  move this function to an utility file
 
-
 /**
  * Address input with ENS name resolution
  */
