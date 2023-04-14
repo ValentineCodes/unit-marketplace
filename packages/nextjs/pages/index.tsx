@@ -1,18 +1,12 @@
 import Head from "next/head";
-import Link from "next/link";
 import type { NextPage } from "next";
-import { XCircleIcon } from "@heroicons/react/24/outline";
 import { Listings } from "~~/components/Listings";
 import Earnings from "~~/components/Earnings";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import ListItem from "~~/components/forms/ListItem";
 import Fees from "~~/components/Fees";
 import { useScaffoldContractRead } from "~~/hooks/scaffold-eth";
 import { useAccount } from "wagmi";
-
- type FeeParams = {
-  token: string;
-}
 
 const Home: NextPage = () => {
   const [showListItem, setShowListItem] = useState(false)
@@ -25,12 +19,12 @@ const Home: NextPage = () => {
   const toggleListItem = () => {
     setShowListItem(current => !current)
   }
-
   return (
     <>
       <Head>
         <title>Unit - NFT Marketplace</title>
         <meta name="description" content="Created with 🏗 scaffold-eth" />
+ 
       </Head>
 
 

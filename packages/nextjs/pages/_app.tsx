@@ -14,6 +14,7 @@ import { useAppStore } from "~~/services/store/store";
 import { wagmiClient } from "~~/services/web3/wagmiClient";
 import { appChains } from "~~/services/web3/wagmiConnectors";
 import "~~/styles/globals.css";
+import { wrapper } from "~~/store";
 
 
 export const apolloClient = new ApolloClient({
@@ -51,4 +52,4 @@ const ScaffoldEthApp = ({ Component, pageProps }: AppProps) => {
   );
 };
 
-export default ScaffoldEthApp;
+export default wrapper.withRedux(ScaffoldEthApp);
