@@ -1,11 +1,11 @@
 import { Transition, Dialog } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
-import { Fragment, useState, useCallback } from "react";
-import { InputBase } from "../scaffold-eth";
-import { BigNumber, ethers } from "ethers";
+import { Fragment, useState } from "react";
 import DeadlineInput from "./DeadlineInput";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { Listing } from "../Listings";
+import { useDispatch } from "react-redux";
+import { extendDeadline } from "~~/store/listings";
 
 interface Props {
     isOpen: boolean;
@@ -15,12 +15,18 @@ interface Props {
 export default ({isOpen, toggleVisibility, listing}: Props) => {
     const [extraTime, setExtraTime] = useState("")
 
+    const dispatch = useDispatch()
+
     const {writeAsync, isLoading} = useScaffoldContractWrite({
         contractName: "Unit",
         functionName: "extendItemDeadline",
-        args: [listing.nft, listing.tokenId, extraTime]
+        args: [listing.nft, listing.tokenId, extraTime],
     })
     
+    const handleTx = async () => {
+        await writeAsync()
+        dispatch(extendDeadline({id: listing.id, extraTime}))
+    }
     return (
         <Transition appear show={isOpen} as={Fragment}>
             <Dialog as="div" className="relative z-10" onClose={toggleVisibility}>
@@ -39,7 +45,7 @@ export default ({isOpen, toggleVisibility, listing}: Props) => {
                             <XCircleIcon className="text-black hover:text-[red] transition-colors duration-300 cursor-pointer  w-10" onClick={toggleVisibility} />
 
                             <DeadlineInput name="extendDeadline" placeholder="Extra time" onChange={setExtraTime} />
-                            <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(extraTime)} onClick={writeAsync}>
+                            <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(extraTime) || isLoading} onClick={handleTx}>
                                {!isLoading && "Extend 💸"}
                             </button>
                         </Dialog.Panel>

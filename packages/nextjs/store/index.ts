@@ -1,11 +1,11 @@
-import { authSlice } from "./authSlice";
+import { ListingsSlice } from "./listings";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { createWrapper } from "next-redux-wrapper";
 import { persistReducer, persistStore } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
 const rootReducer = combineReducers({
-  [authSlice.name]: authSlice.reducer,
+  [ListingsSlice.name]: ListingsSlice.reducer,
 });
 
 const makeConfiguredStore = () =>
@@ -22,7 +22,7 @@ export const makeStore = () => {
     // we need it only on client side
     const persistConfig = {
       key: "nextjs",
-      whitelist: ["auth"], // make sure it does not clash with server keys
+      blacklist: ["listings"], // make sure it does not clash with server keys
       storage,
     };
     const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -5,6 +5,8 @@ import { BigNumber, ethers } from "ethers";
 import { XCircleIcon } from "@heroicons/react/24/outline";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { Listing } from "../Listings";
+import { useDispatch } from "react-redux";
+import { updatePrice } from "~~/store/listings";
 
 export type Action = "updatePrice" | "enableAuction" | "disableAuction"
 interface Props {
@@ -16,8 +18,9 @@ interface Props {
 export default ({action, isOpen, toggleVisibility, listing }: Props) => {
   const [price, setPrice] = useState<string | BigNumber>("");
   const [useCurrentPrice, setUseCurrentPrice] = useState(false)
+  const dispatch = useDispatch()
 
-  const {writeAsync: updatePrice, isLoading: isUpdatingPrice} = useScaffoldContractWrite({
+  const {writeAsync: updateItemPrice, isLoading: isUpdatingPrice} = useScaffoldContractWrite({
     contractName: "Unit",
     functionName: "updateItemPrice",
     args: [listing.nft, listing.tokenId, price]
@@ -35,10 +38,11 @@ export default ({action, isOpen, toggleVisibility, listing }: Props) => {
     args: [listing.nft, listing.tokenId, useCurrentPrice? ethers.utils.parseEther("0") : price]
   })
 
-  const handleTx = () => {
+  const handleTx = async () => {
     switch (action) {
       case "updatePrice": 
-        updatePrice()
+        await updateItemPrice()
+        dispatch(updatePrice({id: listing.id, newPrice: price}))
         break;
       case "enableAuction":
         enableAuction()

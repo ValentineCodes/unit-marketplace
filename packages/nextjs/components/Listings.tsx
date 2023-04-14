@@ -1,10 +1,11 @@
-import { useQuery, gql } from "@apollo/client";
 import { getListings } from "~~/apis/subgraphQueries";
 import ListingCard from "./cards/ListingCard";
 import { BigNumber } from "ethers";
 import { apolloClient } from "~~/pages/_app";
 import { useEffect, useState } from "react";
 import { Spinner } from "./Spinner";
+import { useDispatch, useSelector } from "react-redux";
+import { addListings, selectListings } from "~~/store/listings";
 
 export type Listing = {
     id?: string;
@@ -17,20 +18,24 @@ export type Listing = {
     deadline: string | number
 }
 export function Listings() {
-    // const {loading, error, data} = useQuery(getListings())
-    const [listings, setListings] = useState<Listing[]>()
+    // const [listings, setListings] = useState<Listing[]>()
+    const dispatch = useDispatch()
+    const listings = useSelector(selectListings)
     const [isLoading, setIsLoading] = useState(true)
  
 
       useEffect(() => {
         apolloClient.query({
             query: getListings()
-          }).then(result => setListings(result.data.listings)).catch(error => {
+          })
+          .then(result => dispatch(addListings(result.data.listings)))
+          .catch(error => {
             return
-          }).finally(() => {
+          })
+          .finally(() => {
             setIsLoading(false)
           })
-      } , [])
+      }, [])
 
       let allListings
 
