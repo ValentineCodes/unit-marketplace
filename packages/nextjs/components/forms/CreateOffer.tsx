@@ -4,10 +4,8 @@ import { Fragment, useState, useCallback, useEffect} from "react";
 import { InputBase } from "../scaffold-eth";
 import { BigNumber, ethers } from "ethers";
 import DeadlineInput from "./DeadlineInput";
-import { useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth";
-import { usePrepareContractWrite, useContractWrite, erc20ABI, useAccount, useContractRead, useWaitForTransaction } from "wagmi";
-import deployedContracts from "~~/generated/hardhat_contracts"
-import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
+import { useDeployedContractInfo, useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth";
+import { useContractWrite, erc20ABI, useAccount, useContractRead, useWaitForTransaction } from "wagmi";
 import { Listing } from "../Listings";
 
 type Item = {
@@ -42,22 +40,20 @@ const multiplyBy1e18 = useCallback(() => {
   handleItemValueChange("amount", ethers.utils.parseEther(offer.amount.toString()));
 }, [offer.amount]);
 
-const targetNetwork = getTargetNetwork()
-
-const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
+const {data: unit, isLoading: isLoadingUnit} = useDeployedContractInfo("Unit")
 
 const {data: allowance, refetch: refetchAllowance} = useContractRead({
   address: offer.token,
   abi: erc20ABI,
   functionName: "allowance",
-  args: [connectedAccount, unit.address]
+  args: [connectedAccount, unit?.address]
 })
 
  const { data: approveResult, isLoading: isApproveLoading, isSuccess: isApprovalSuccessful, writeAsync: approve } = useContractWrite({
     address: offer.token,
     abi: erc20ABI,
     functionName: 'approve',
-    args: [unit.address, BigNumber.from(offer.amount || 0)],
+    args: [unit?.address, BigNumber.from(offer.amount || 0)],
     mode: "recklesslyUnprepared"
  })
 

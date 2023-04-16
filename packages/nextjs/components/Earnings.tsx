@@ -1,18 +1,15 @@
 import { Popover, Transition } from "@headlessui/react";
-import { ChevronDoubleRightIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
 import { useDeployedContractInfo, useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { ethers } from "ethers";
 import { ETH_ADDRESS } from "~~/utils/constants";
 import TokenPrice from "./TokenPrice";
 import { Spinner } from "./Spinner";
-import { gql } from "@apollo/client";
 import { useState, useEffect } from "react";
-import { useAccount, useContractRead, useEnsAddress } from "wagmi";
+import { useAccount, useContractRead } from "wagmi";
 import { apolloClient } from "~~/pages/_app";
 import { getEarnings } from "~~/apis/subgraphQueries";
-import { ERC20ANI } from "~~/utils/abis";
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
-import deployedContracts from "~~/generated/hardhat_contracts"
 
 const targetNetwork = getTargetNetwork()
 
@@ -27,18 +24,11 @@ interface EarningProps {
 }
 
 const Earning = ({earning}: EarningProps) => {
-  // const {data: earnings} = useScaffoldContractRead({
-  //   contractName: "Unit",
-  //   functionName: "getEarnings",
-  //   args: [earning.owner, earning.token]
-  // })
-
-
-  const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
+  const {data: unit, isLoading: isLoadingUnit} = useDeployedContractInfo("Unit")
 
   const {data: earnings, isFetching, refetch} = useContractRead({
     chainId: targetNetwork.id,
-    address: unit.address,
+    address: unit?.address,
     abi: unit.abi,
     functionName: "getEarnings",
     args: [earning.owner, earning.token],
@@ -62,18 +52,23 @@ const Earning = ({earning}: EarningProps) => {
     console.log("is fetching earnings...")
   }
  
-
-
-
   if(earnings) {
     return (
       <div className="flex flex-wrap items-center justify-between">
     
-      {earning.token === ETH_ADDRESS? <p>{ethers.utils.formatEther(earnings)} ETH</p> : <TokenPrice price={earnings} token={earning.token} /> }
+        {earning.token === ETH_ADDRESS? (
+          <>
+            <p>{ethers.utils.formatEther(earnings)} ETH</p>
+            <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={withdraw}>Withdraw</button>
+          </>
+        ) : (
+          <>
+            <TokenPrice price={earnings} token={earning.token} /> 
+            <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={withdraw}>Withdraw</button>
+          </>
+        )}
 
-<button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={withdraw}>Withdraw</button>
-
-</div>
+      </div>
     )
   }
 
@@ -107,7 +102,7 @@ export default () => {
     if(earnings.length > 0) {
       userEarnings = earnings.map(item => <Earning key={item.address} token={item} />)
     } else {
-      userEarnings = <p className="text-black text-lg">No Earnings</p>
+      userEarnings = <p>No Earnings</p>
     }
   }
 

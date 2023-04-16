@@ -1,6 +1,6 @@
 import { Transition, Dialog } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
-import { Fragment, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import DeadlineInput from "./DeadlineInput";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { OfferParams } from "../Offers";
@@ -16,21 +16,17 @@ export default ({isOpen, toggleVisibility, offer}: Props) => {
     const [extraTime, setExtraTime] = useState("")
     const dispatch = useDispatch()
 
-    const {writeAsync, isLoading} = useScaffoldContractWrite({
+    const {writeAsync, isLoading, isSuccess} = useScaffoldContractWrite({
         contractName: "Unit",
         functionName: "extendOfferDeadline",
         args: [offer.nft, offer.tokenId, extraTime]
     })
 
-    const handleTx = async () => {
-        try {
-            await writeAsync()
+    useEffect(() => {
+        if(isSuccess) {
             dispatch(extendDeadline({id: offer.id, extraTime}))
-        } catch(error) {
-            console.log(error)
-            return
         }
-    }
+    } , [isSuccess])
     
     return (
         <Transition appear show={isOpen} as={Fragment}>
@@ -50,7 +46,7 @@ export default ({isOpen, toggleVisibility, offer}: Props) => {
                             <XCircleIcon className="text-black hover:text-[red] transition-colors duration-300 cursor-pointer  w-10" onClick={toggleVisibility} />
 
                             <DeadlineInput name="extendOfferDeadline" placeholder="Extra time" onChange={setExtraTime} />
-                            <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(extraTime) || isLoading} onClick={handleTx}>
+                            <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(extraTime) || isLoading} onClick={writeAsync}>
                                {!isLoading && "Send 💸"}
                             </button>
                         </Dialog.Panel>

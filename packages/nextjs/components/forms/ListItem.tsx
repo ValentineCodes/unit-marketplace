@@ -4,11 +4,12 @@ import { Fragment, useState, useCallback, useEffect} from "react";
 import { InputBase } from "../scaffold-eth";
 import { BigNumber, ethers } from "ethers";
 import DeadlineInput from "./DeadlineInput";
-import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+import { useDeployedContractInfo, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { useContractWrite, erc721ABI, useContractRead, useProvider } from "wagmi";
 import deployedContracts from "~~/generated/hardhat_contracts"
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
 import { useTransactor } from "~~/hooks/scaffold-eth";
+import { useDispatch } from "react-redux";
 
 type Item = {
   nft: string;
@@ -35,7 +36,6 @@ export default ({isOpen, toggleVisibility}: Props) => {
   const [isTokenPrice, setIsTokenPrice] = useState(false)
   const [error, setError] = useState(false);
 
-
 const handleItemValueChange = (name: string, value: string) => {
     setItem(current => ({...current, [name] : value}))
 }
@@ -48,8 +48,7 @@ const multiplyBy1e18 = useCallback(() => {
 }, [item.price]);
 
 const writeTx = useTransactor()
-const targetNetwork = getTargetNetwork()
-const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
+const {data: unit, isLoading: isLoadingUnit} = useDeployedContractInfo("Unit")
 
 const {data: approvedSpender, refetch: refetchApprovedSpender} = useContractRead({
   address: item.nft,
@@ -62,17 +61,17 @@ const {data: approvedSpender, refetch: refetchApprovedSpender} = useContractRead
   address: item.nft,
   abi: erc721ABI,
   functionName: 'approve',
-  args: [unit.address, item.tokenId],
+  args: [unit?.address, item.tokenId],
   mode: "recklesslyUnprepared"
  })
 
-  const {writeAsync: list, isLoading: isListing} = useScaffoldContractWrite({
+  const {writeAsync: list, isLoading: isListing, isSuccess: isListingSuccessful} = useScaffoldContractWrite({
     contractName: "Unit",
     functionName: "listItem",
     args: [item.nft, item.tokenId, item.price, item.deadline]
   })
 
-  const {writeAsync: listWithToken, isLoading: isListingWithToken} = useScaffoldContractWrite({
+  const {writeAsync: listWithToken, isLoading: isListingWithToken, isSuccess: isListingWithTokenSuccessful} = useScaffoldContractWrite({
     contractName: "Unit",
     functionName: "listItemWithToken",
     args: [item.nft, item.tokenId, item.token, item.price, item.auction, item.deadline]
@@ -90,11 +89,20 @@ const {data: approvedSpender, refetch: refetchApprovedSpender} = useContractRead
   const handleTx = async () => {
       if(isApproveLoading) return 
 
-      if(approvedSpender !== unit.address) {
+      if(approvedSpender !== unit?.address) {
           await writeTx(approve())
       }
       handleListing()
   }
+
+  // const dispatch = useDispatch()
+  // const provider = useProvider()
+
+  // useEffect(() => {
+  //   if(isListingSuccessful || isListingWithTokenSuccessful) {
+  //      const unit = new ethers.Contract()
+  //   }
+  // } , [isListingSuccessful, isListingWithTokenSuccessful])
 
     return (
         <Transition appear show={isOpen} as={Fragment}>

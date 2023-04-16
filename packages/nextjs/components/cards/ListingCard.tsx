@@ -12,15 +12,13 @@ import { ERC721ABI } from "~~/utils/abis"
 import { ETH_ADDRESS } from "~~/utils/constants"
 import moment from "moment"
 import TokenPrice from "../TokenPrice"
-import { useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth"
+import { useDeployedContractInfo, useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth"
 import Offers from "../Offers"
 import { isENS } from "~~/utils/helperFunctions"
-import deployedContracts from "~~/generated/hardhat_contracts"
 import Link from "next/link"
 import { useDispatch } from "react-redux"
 import { removeListing } from "~~/store/listings"
 
-const targetNetwork = getTargetNetwork()
 interface Props {
     listing: Listing;
 }
@@ -73,13 +71,13 @@ export default ({listing}: Props ) => {
 
    
 
-const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
+const {data: unit, isLoading: isLoadingUnit} = useDeployedContractInfo("Unit")
 
 const {data: allowance} = useContractRead({
   address: listing.token,
   abi: erc20ABI,
   functionName: "allowance",
-  args: [address, unit.address]
+  args: [address, unit?.address]
 })
 
 const {data: itemOwner} = useContractRead({
@@ -93,24 +91,24 @@ const {data: itemOwner} = useContractRead({
     address: listing.token,
     abi: erc20ABI,
     functionName: 'approve',
-    args: [unit.address, BigNumber.from(listing.price || 0)],
+    args: [unit?.address, BigNumber.from(listing.price || 0)],
     mode: "recklesslyUnprepared"
  })
 
-    const {writeAsync: unlist, isLoading: isUnlisting} = useScaffoldContractWrite({
+    const {writeAsync: unlist, isLoading: isUnlisting, isSuccess: isItemUnlisted} = useScaffoldContractWrite({
         contractName: "Unit",
         functionName: "unlistItem",
         args: [listing.nft, listing.tokenId]
     })
 
-    const {writeAsync: buy, isLoading: isBuying} = useScaffoldContractWrite({
+    const {writeAsync: buy, isLoading: isBuying, isSuccess: isItemBought} = useScaffoldContractWrite({
         contractName: "Unit",
         functionName: "buyItem",
         args: [listing.nft, listing.tokenId],
         value: ethers.utils.formatEther(listing.price)
     })
 
-    const {writeAsync: buyWithToken, isLoading: isBuyingWithToken} = useScaffoldContractWrite({
+    const {writeAsync: buyWithToken, isLoading: isBuyingWithToken, isSuccess: isItemBoughtWithToken} = useScaffoldContractWrite({
         contractName: "Unit",
         functionName: "buyItemWithToken",
         args: [listing.nft, listing.tokenId, listing.token, listing.price],
@@ -138,23 +136,17 @@ const {data: itemOwner} = useContractRead({
                    await  buyWithToken()
                  }
              }
-     
-             dispatch(removeListing({id: listing.id}))
         } catch(error) {
             return
         }
  
     }
 
-    const handleUnlist = async () => {
-        try {
-            await unlist()  
+    useEffect(() => {
+        if(isItemUnlisted || isItemBought || isItemBoughtWithToken) {
             dispatch(removeListing({id: listing.id}))
-        } catch(error) {
-            return
         }
- 
-    }
+    }, [isItemUnlisted, isItemBought, isItemBoughtWithToken])
 
     const updateUI = async () => {
         try{
@@ -207,7 +199,7 @@ const {data: itemOwner} = useContractRead({
                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handlePriceUpdate}>Update price</li>
                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleExtendDeadline}>Extend deadline</li>
                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handleAuctionToggle}>{listing.auction ? "Disable": "Enable"} Auction</li>
-                                            <li className="px-4 py-2 bg-red-700 text-white cursor-pointer" onClick={handleUnlist}>Unlist</li>
+                                            <li className="px-4 py-2 bg-red-700 text-white cursor-pointer" onClick={unlist}>Unlist</li>
                                         </>
                                     )}
 

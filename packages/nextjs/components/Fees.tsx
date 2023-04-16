@@ -30,10 +30,18 @@ const Fee = ({token}: FeeParams) => {
   if(fees) {
     return (
       <div className="flex flex-wrap items-center justify-between">
-               {token === ETH_ADDRESS? <p>{ethers.utils.formatEther(fees)} ETH</p> : <TokenPrice price={fees} token={token} /> } 
-      
-      <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={withdraw}>Withdraw</button>
-  </div>
+        {token === ETH_ADDRESS? (
+          <>
+            <p>{ethers.utils.formatEther(fees)} ETH</p>
+            <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={withdraw}>Withdraw</button>
+          </>
+        )  : (
+          <>
+            <TokenPrice price={fees} token={token} /> 
+            <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={withdraw}>Withdraw</button>
+          </>
+        )} 
+      </div>
     )
   } else {
     return <Spinner width="20px" height="20px" />
@@ -63,7 +71,7 @@ export default () => {
     if(fees.length > 0) {
       userFees = fees?.map(fee => <Fee key={fee.token} token={fee.token} />)
     } else {
-      userFees = <p>No fees</p>
+      userFees = <p>No Fees</p>
     }
   }
  

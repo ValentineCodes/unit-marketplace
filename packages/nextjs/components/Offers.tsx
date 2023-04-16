@@ -41,13 +41,13 @@ const Offer = ({offer, canAccept}: OfferProps) => {
         setExtendDeadlne(current => !current)
     }
 
-    const {writeAsync: removeItemOffer, isLoading: isRemoving} = useScaffoldContractWrite({
+    const {writeAsync: removeItemOffer, isLoading: isRemoving, isSuccess: isOfferRemoved} = useScaffoldContractWrite({
         contractName: "Unit",
         functionName: "removeOffer",
         args: [offer.nft, offer.tokenId]
     })
 
-    const {writeAsync: acceptOffer, isLoading: isAccepting} = useScaffoldContractWrite({
+    const {writeAsync: acceptOffer, isLoading: isAccepting, isSuccess: isOfferAccepted} = useScaffoldContractWrite({
         contractName: "Unit",
         functionName: "acceptOffer",
         args: [offer.owner, offer.nft, offer.tokenId]
@@ -60,14 +60,11 @@ const Offer = ({offer, canAccept}: OfferProps) => {
         cacheTime: 30_000
     })
 
-    const handleRemoveOffer = async () => {
-        try {
-            await removeItemOffer()
+    useEffect(() => {
+        if(isOfferAccepted || isOfferRemoved) {
             dispatch(removeOffer({id: offer.id}))
-        } catch(error) {
-            return
         }
-    }
+    }, [isOfferAccepted, isOfferRemoved])
 
     return (
         <div className="px-2 py-1 border-b-2">
@@ -91,7 +88,7 @@ const Offer = ({offer, canAccept}: OfferProps) => {
                              >
                              <Popover.Panel as="ul" className="absolute bg-white rounded-lg text-black min-w-[200px] border shadow-md font-normal">
                                              <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleExtendDeadline}>Extend deadline</li>
-                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handleRemoveOffer}>Remove</li>
+                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={removeItemOffer}>Remove</li>
  
                              </Popover.Panel>
                          </Transition>

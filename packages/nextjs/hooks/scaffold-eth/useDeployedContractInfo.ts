@@ -13,7 +13,8 @@ export const useDeployedContractInfo = <TContractName extends ContractName>(cont
   const deployedContract = contracts?.[scaffoldConfig.targetNetwork.id]?.[scaffoldConfig.targetNetwork.network]
     ?.contracts?.[contractName as ContractName] as Contract<TContractName>;
   const [status, setStatus] = useState<ContractCodeStatus>(ContractCodeStatus.LOADING);
-  const provider = useProvider({ chainId: scaffoldConfig.targetNetwork.id });
+  // const provider = { chainId: scaffoldConfig.targetNetwork.id };
+  const provider = useProvider();
 
   useEffect(() => {
     const checkContractDeployment = async () => {

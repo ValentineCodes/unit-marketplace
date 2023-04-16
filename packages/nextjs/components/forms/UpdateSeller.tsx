@@ -4,9 +4,8 @@ import { XCircleIcon } from "@heroicons/react/24/outline";
 import { useContractWrite, useContractRead, erc721ABI } from "wagmi";
 import { InputBase } from "../scaffold-eth";
 import { Listing } from "../Listings";
-import { useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth";
+import { useDeployedContractInfo, useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth";
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
-import deployedContracts from "~~/generated/hardhat_contracts";
 
 const targetNetwork = getTargetNetwork()
 interface Props {
@@ -19,7 +18,7 @@ export default ({isOpen, toggleVisibility, listing}: Props) => {
 
     const writeTx = useTransactor()
     
-    const unit = deployedContracts[targetNetwork.id][targetNetwork.network].contracts.Unit
+    const {data: unit, isLoading: isLoadingUnit} = useDeployedContractInfo("Unit")
 
     const {data: approvedSpender, refetch: refetchApprovedSpender} = useContractRead({
     address: listing.nft,
@@ -32,7 +31,7 @@ export default ({isOpen, toggleVisibility, listing}: Props) => {
     address: listing.nft,
     abi: erc721ABI,
     functionName: 'approve',
-    args: [unit.address, listing.tokenId],
+    args: [unit?.address, listing.tokenId],
     mode: "recklesslyUnprepared"
     })
 
@@ -45,7 +44,7 @@ export default ({isOpen, toggleVisibility, listing}: Props) => {
     const handleTx = async () => {
         if(isApproveLoading) return
 
-        if(approvedSpender !== unit.address) {
+        if(approvedSpender !== unit?.address) {
             await writeTx(approve())
         }
         updateSeller()
