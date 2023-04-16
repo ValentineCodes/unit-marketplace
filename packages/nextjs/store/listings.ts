@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { BigNumber } from "ethers";
 import { HYDRATE } from "next-redux-wrapper";
 
 export interface Listing {

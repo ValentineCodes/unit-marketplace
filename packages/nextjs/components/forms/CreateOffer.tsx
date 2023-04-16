@@ -5,8 +5,10 @@ import { InputBase } from "../scaffold-eth";
 import { BigNumber, ethers } from "ethers";
 import DeadlineInput from "./DeadlineInput";
 import { useDeployedContractInfo, useScaffoldContractWrite, useTransactor } from "~~/hooks/scaffold-eth";
-import { useContractWrite, erc20ABI, useAccount, useContractRead, useWaitForTransaction } from "wagmi";
+import { useContractWrite, erc20ABI, useAccount, useContractRead, useWaitForTransaction, useProvider } from "wagmi";
 import { Listing } from "../Listings";
+import { addOffer } from "~~/store/offers";
+import { useDispatch } from "react-redux";
 
 type Item = {
   token: string;
@@ -64,15 +66,37 @@ const {data: allowance, refetch: refetchAllowance} = useContractRead({
   })
 
   const writeTx = useTransactor()
-  
-const handleTx = async () => {
-  if(allowance){
-    if(allowance.lt(BigNumber.from(offer.amount))){
-        await writeTx(approve())
-    }
-    createOffer()
+  const dispatch = useDispatch()
+  const provider = useProvider()
+
+  const addOfferToStore = async () => {
+    const iUnit = new ethers.Contract(unit.address, unit.abi, provider)
+    const offer = await iUnit.getOffer(connectedAccount, listing.nft, listing.tokenId)
+    dispatch(addOffer({
+      id: Math.random().toString(),
+      owner: offer.seller,
+      nft: offer.nft,
+      tokenId: offer.tokenId.toString(),
+      token: offer.token,
+      amount: offer.amount.toString(),
+      deadline: offer.deadline.toString(),
+    }))
+
+    toggleVisibility()
   }
-}
+  
+  const handleTx = async () => {
+    if(allowance){
+      if(allowance.lt(BigNumber.from(offer.amount))){
+          await writeTx(approve())
+      }
+      await createOffer()
+
+      await addOfferToStore()
+    }
+  }
+
+
 
     return (
         <Transition appear show={isOpen} as={Fragment}>

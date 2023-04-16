@@ -60,11 +60,23 @@ const Offer = ({offer, canAccept}: OfferProps) => {
         cacheTime: 30_000
     })
 
-    useEffect(() => {
-        if(isOfferAccepted || isOfferRemoved) {
+    const handleRemoveOffer = async () => {
+        try {
+            await removeItemOffer()
             dispatch(removeOffer({id: offer.id}))
+        } catch(error) {
+            return
         }
-    }, [isOfferAccepted, isOfferRemoved])
+    }
+
+    const handleAcceptOffer = async () => {
+        try {
+            await acceptOffer()
+            dispatch(removeOffer({id: offer.id}))
+        } catch(error) {
+            return
+        }
+    }
 
     return (
         <div className="px-2 py-1 border-b-2">
@@ -75,7 +87,7 @@ const Offer = ({offer, canAccept}: OfferProps) => {
 
             <div className="flex justify-between items-center">
                 <p className="text-black">Expires {moment(new Date(Number(offer.deadline) * 1000)).fromNow()}</p>
-                {canAccept? <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={acceptOffer}>Accept</button> : isConnected && address?.toLowerCase() === offer.owner.toLowerCase()? (
+                {canAccept? <button className="bg-green-500 hover:bg-black transition-colors duration-300 text-white font-bold rounded-lg px-2 py-1 text-sm" onClick={handleAcceptOffer}>Accept</button> : isConnected && address?.toLowerCase() === offer.owner.toLowerCase()? (
                          <Popover>
                         <Popover.Button><EllipsisHorizontalIcon className="w-8 bg-black/80 text-white rounded-lg" /></Popover.Button>
                              <Transition
@@ -88,7 +100,7 @@ const Offer = ({offer, canAccept}: OfferProps) => {
                              >
                              <Popover.Panel as="ul" className="absolute bg-white rounded-lg text-black min-w-[200px] border shadow-md font-normal">
                                              <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleExtendDeadline}>Extend deadline</li>
-                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={removeItemOffer}>Remove</li>
+                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handleRemoveOffer}>Remove</li>
  
                              </Popover.Panel>
                          </Transition>
@@ -112,6 +124,7 @@ export default ({isOpen, toggleVisibility, listing, canAcceptOffer}: Props) => {
     const [createOffer, setCreateOffer] = useState(false)
     const dispatch = useDispatch()
     const offers = useSelector(selectOffers)
+
 
     const toggleCreateOffer = () => {
         setCreateOffer(current => !current)

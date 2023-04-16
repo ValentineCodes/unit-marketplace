@@ -10,6 +10,7 @@ import deployedContracts from "~~/generated/hardhat_contracts"
 import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { useDispatch } from "react-redux";
+import { addListing } from "~~/store/listings";
 
 type Item = {
   nft: string;
@@ -77,11 +78,31 @@ const {data: approvedSpender, refetch: refetchApprovedSpender} = useContractRead
     args: [item.nft, item.tokenId, item.token, item.price, item.auction, item.deadline]
   })
 
-  const handleListing = () => {
+  const dispatch = useDispatch()
+  const provider = useProvider()
+
+  const addListingToStore = async () => {
+    const iUnit = new ethers.Contract(unit.address, unit.abi, provider)
+    const listing = await iUnit.getListing(item.nft, item.tokenId)
+    dispatch(addListing({
+      id: Math.random().toString(),
+      owner: listing.seller,
+      nft: listing.nft,
+      tokenId: listing.tokenId.toString(),
+      token: listing.token,
+      price: listing.price.toString(),
+      auction: listing.auction,
+      deadline: listing.deadline.toString(),
+    }))
+
+    toggleVisibility()
+  }
+
+  const handleListing = async () => {
     if(isTokenPrice) {
-      listWithToken()
+     await listWithToken()
     } else {
-      list()
+     await list()
     }
   }
 
@@ -92,17 +113,12 @@ const {data: approvedSpender, refetch: refetchApprovedSpender} = useContractRead
       if(approvedSpender !== unit?.address) {
           await writeTx(approve())
       }
-      handleListing()
+      await handleListing()
+
+      await addListingToStore()
   }
 
-  // const dispatch = useDispatch()
-  // const provider = useProvider()
 
-  // useEffect(() => {
-  //   if(isListingSuccessful || isListingWithTokenSuccessful) {
-  //      const unit = new ethers.Contract()
-  //   }
-  // } , [isListingSuccessful, isListingWithTokenSuccessful])
 
     return (
         <Transition appear show={isOpen} as={Fragment}>
