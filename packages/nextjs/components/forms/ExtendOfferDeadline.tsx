@@ -4,6 +4,8 @@ import { Fragment, useState } from "react";
 import DeadlineInput from "./DeadlineInput";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { OfferParams } from "../Offers";
+import { useDispatch } from "react-redux";
+import { extendDeadline } from "~~/store/offers";
 
 interface Props {
     isOpen: boolean;
@@ -12,12 +14,23 @@ interface Props {
 }
 export default ({isOpen, toggleVisibility, offer}: Props) => {
     const [extraTime, setExtraTime] = useState("")
+    const dispatch = useDispatch()
 
     const {writeAsync, isLoading} = useScaffoldContractWrite({
         contractName: "Unit",
         functionName: "extendOfferDeadline",
         args: [offer.nft, offer.tokenId, extraTime]
     })
+
+    const handleTx = async () => {
+        try {
+            await writeAsync()
+            dispatch(extendDeadline({id: offer.id, extraTime}))
+        } catch(error) {
+            console.log(error)
+            return
+        }
+    }
     
     return (
         <Transition appear show={isOpen} as={Fragment}>
@@ -37,7 +50,7 @@ export default ({isOpen, toggleVisibility, offer}: Props) => {
                             <XCircleIcon className="text-black hover:text-[red] transition-colors duration-300 cursor-pointer  w-10" onClick={toggleVisibility} />
 
                             <DeadlineInput name="extendOfferDeadline" placeholder="Extra time" onChange={setExtraTime} />
-                            <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(extraTime)} onClick={writeAsync}>
+                            <button className={`btn btn-secondary btn-sm mt-4 ${isLoading ? "loading" : ""}`} disabled={!Boolean(extraTime) || isLoading} onClick={handleTx}>
                                {!isLoading && "Send 💸"}
                             </button>
                         </Dialog.Panel>

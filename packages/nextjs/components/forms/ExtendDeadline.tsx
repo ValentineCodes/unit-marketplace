@@ -24,8 +24,14 @@ export default ({isOpen, toggleVisibility, listing}: Props) => {
     })
     
     const handleTx = async () => {
-        await writeAsync()
-        dispatch(extendDeadline({id: listing.id, extraTime}))
+        try{
+            await writeAsync()
+            dispatch(extendDeadline({id: listing.id, extraTime}))
+            toggleVisibility()
+        } catch(error) {
+            return
+        }
+     
     }
     return (
         <Transition appear show={isOpen} as={Fragment}>

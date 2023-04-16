@@ -32,6 +32,11 @@ export const ListingsSlice = createSlice({
         state.listings = [action.payload, ...state.listings];
       }
     },
+    removeListing(state, action) {
+      if (state.listings) {
+        state.listings = state.listings.filter(listing => listing.id !== action.payload.id);
+      }
+    },
     extendDeadline(state, action) {
       if (state.listings) {
         state.listings = state.listings.map(listing => {
@@ -60,6 +65,36 @@ export const ListingsSlice = createSlice({
         });
       }
     },
+    enableAuction(state, action) {
+      if (state.listings) {
+        state.listings = state.listings.map(listing => {
+          if (listing.id === action.payload.id) {
+            return {
+              ...listing,
+              auction: true,
+              price: action.payload.startingPrice,
+            };
+          } else {
+            return listing;
+          }
+        });
+      }
+    },
+    disableAuction(state, action) {
+      if (state.listings) {
+        state.listings = state.listings.map(listing => {
+          if (listing.id === action.payload.id) {
+            return {
+              ...listing,
+              auction: false,
+              price: action.payload.newPrice,
+            };
+          } else {
+            return listing;
+          }
+        });
+      }
+    },
   },
   extraReducers: {
     [HYDRATE]: (state, action) => {
@@ -71,8 +106,9 @@ export const ListingsSlice = createSlice({
   },
 });
 
-export const { addListings, addListing, extendDeadline, updatePrice } = ListingsSlice.actions;
+export const { addListings, addListing, removeListing, extendDeadline, updatePrice, enableAuction, disableAuction } =
+  ListingsSlice.actions;
 
-export const selectListings = state => state.listings;
+export const selectListings = state => state.listings.listings;
 
 export default ListingsSlice.reducer;

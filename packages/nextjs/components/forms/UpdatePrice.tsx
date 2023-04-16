@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { InputBase } from "../scaffold-eth";
 import { Dialog, Transition } from "@headlessui/react";
 import { BigNumber, ethers } from "ethers";
@@ -6,7 +6,7 @@ import { XCircleIcon } from "@heroicons/react/24/outline";
 import { useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { Listing } from "../Listings";
 import { useDispatch } from "react-redux";
-import { updatePrice } from "~~/store/listings";
+import { disableAuction, enableAuction, updatePrice } from "~~/store/listings";
 
 export type Action = "updatePrice" | "enableAuction" | "disableAuction"
 interface Props {
@@ -20,40 +20,56 @@ export default ({action, isOpen, toggleVisibility, listing }: Props) => {
   const [useCurrentPrice, setUseCurrentPrice] = useState(false)
   const dispatch = useDispatch()
 
-  const {writeAsync: updateItemPrice, isLoading: isUpdatingPrice} = useScaffoldContractWrite({
+  const {writeAsync: updateItemPrice, isLoading: isUpdatingPrice, isSuccess: isUpdatePriceSuccessful} = useScaffoldContractWrite({
     contractName: "Unit",
     functionName: "updateItemPrice",
     args: [listing.nft, listing.tokenId, price]
   })
 
-  const {writeAsync: enableAuction, isLoading: isEnablingAuction} = useScaffoldContractWrite({
+  const {writeAsync: enableItemAuction, isLoading: isEnablingAuction, isSuccess: isEnableAuctionSuccessful} = useScaffoldContractWrite({
     contractName: "Unit",
     functionName: "enableAuction",
     args: [listing.nft, listing.tokenId, useCurrentPrice? ethers.utils.parseEther("0") : price]
   })
 
-  const {writeAsync: disableAuction, isLoading: isDisablingAuction} = useScaffoldContractWrite({
+  const {writeAsync: disableItemAuction, isLoading: isDisablingAuction, isSuccess: isDisableAuctionSuccessful} = useScaffoldContractWrite({
     contractName: "Unit",
     functionName: "disableAuction",
     args: [listing.nft, listing.tokenId, useCurrentPrice? ethers.utils.parseEther("0") : price]
   })
 
   const handleTx = async () => {
-    switch (action) {
-      case "updatePrice": 
-        await updateItemPrice()
-        dispatch(updatePrice({id: listing.id, newPrice: price}))
-        break;
-      case "enableAuction":
-        enableAuction()
-        break;
-      case "disableAuction":
-        disableAuction()
-        break;
-      default:
-        break;
+    try{
+      switch (action) {
+        case "updatePrice": 
+          await updateItemPrice()
+          break;
+        case "enableAuction":
+          await enableItemAuction()
+          break;
+        case "disableAuction":
+          await disableItemAuction()
+          break;
+        default:
+          break;
+      }
+      toggleVisibility()
+    } catch(error) {
+      return
     }
   }
+
+  useEffect(() => {
+    if(isUpdatePriceSuccessful) {
+      dispatch(updatePrice({id: listing.id, newPrice: price}))
+    }
+    if(isEnableAuctionSuccessful) {
+      dispatch(enableAuction({id: listing.id, startingPrice: useCurrentPrice? ethers.utils.parseEther("0") : price}))
+    }
+    if(isDisableAuctionSuccessful) {
+      dispatch(disableAuction({id: listing.id, newPrice: useCurrentPrice? ethers.utils.parseEther("0") : price}))
+    }
+  }, [isUpdatePriceSuccessful, isEnableAuctionSuccessful, isDisableAuctionSuccessful])
 
 
   const multiplyBy1e18 = useCallback(() => {

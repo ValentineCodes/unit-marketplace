@@ -1,4 +1,5 @@
 import { ListingsSlice } from "./listings";
+import { offersSlice } from "./offers";
 import { combineReducers, configureStore } from "@reduxjs/toolkit";
 import { createWrapper } from "next-redux-wrapper";
 import { persistReducer, persistStore } from "redux-persist";
@@ -6,6 +7,7 @@ import storage from "redux-persist/lib/storage";
 
 const rootReducer = combineReducers({
   [ListingsSlice.name]: ListingsSlice.reducer,
+  [offersSlice.name]: offersSlice.reducer,
 });
 
 const makeConfiguredStore = () =>
@@ -22,7 +24,7 @@ export const makeStore = () => {
     // we need it only on client side
     const persistConfig = {
       key: "nextjs",
-      blacklist: ["listings"], // make sure it does not clash with server keys
+      blacklist: ["listings", "offers"],
       storage,
     };
     const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -7,7 +7,7 @@ import ExtendDeadline from "../forms/ExtendDeadline"
 import { BigNumber, ethers } from "ethers"
 import { erc20ABI, erc721ABI, useAccount, useContractRead, useContractWrite, useEnsAddress } from "wagmi"
 import { Listing } from "../Listings"
-import { getTargetNetwork, notification } from "~~/utils/scaffold-eth"
+import { getTargetNetwork } from "~~/utils/scaffold-eth"
 import { ERC721ABI } from "~~/utils/abis"
 import { ETH_ADDRESS } from "~~/utils/constants"
 import moment from "moment"
@@ -17,12 +17,15 @@ import Offers from "../Offers"
 import { isENS } from "~~/utils/helperFunctions"
 import deployedContracts from "~~/generated/hardhat_contracts"
 import Link from "next/link"
+import { useDispatch } from "react-redux"
+import { removeListing } from "~~/store/listings"
 
 const targetNetwork = getTargetNetwork()
 interface Props {
     listing: Listing;
 }
 export default ({listing}: Props ) => {
+    const dispatch = useDispatch()
     const [showOffers, setShowOffers] = useState(false)
     const [updateSeller, setUpdateSeller] = useState(false)
     const [updatePrice, setUpdatePrice] = useState(false)
@@ -119,38 +122,49 @@ const {data: itemOwner} = useContractRead({
         abi: ERC721ABI,
         functionName: "tokenURI",
         args: [Number(listing.tokenId)],
-        // onError: error => {
-        //     notification.error(error.message)
-        // }
     })
 
     const writeTx = useTransactor()
 
     const purchase = async () => {
-        if(listing.token === ETH_ADDRESS) {
-            buy()
-        } else {
-            if(allowance){
-                if(allowance?.lt(BigNumber.from(listing.price))){
-                     await writeTx(approve())
-                }
-                buyWithToken()
-            }
+        try {
+            if(listing.token === ETH_ADDRESS) {
+                await buy()
+             } else {
+                 if(allowance){
+                     if(allowance?.lt(BigNumber.from(listing.price))){
+                          await writeTx(approve())
+                     }
+                   await  buyWithToken()
+                 }
+             }
+     
+             dispatch(removeListing({id: listing.id}))
+        } catch(error) {
+            return
         }
+ 
+    }
+
+    const handleUnlist = async () => {
+        try {
+            await unlist()  
+            dispatch(removeListing({id: listing.id}))
+        } catch(error) {
+            return
+        }
+ 
     }
 
     const updateUI = async () => {
         try{
-            console.log("tokenuri: ", tokenURI)
         const _tokenURI = tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/")
         const token = await (await fetch(_tokenURI)).json()
 
         if(token) {
             const imageURI = token.image.replace("ipfs://", "https://ipfs.io/ipfs/")
-            console.log("image: ", imageURI)
             const actualToken = {...token, image: imageURI}
             setToken(actualToken)
-            console.log("Token: ", actualToken)
         }
     } catch(error) {
         console.log("error")
@@ -193,7 +207,7 @@ const {data: itemOwner} = useContractRead({
                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handlePriceUpdate}>Update price</li>
                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleExtendDeadline}>Extend deadline</li>
                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handleAuctionToggle}>{listing.auction ? "Disable": "Enable"} Auction</li>
-                                            <li className="px-4 py-2 bg-red-700 text-white cursor-pointer" onClick={unlist}>Unlist</li>
+                                            <li className="px-4 py-2 bg-red-700 text-white cursor-pointer" onClick={handleUnlist}>Unlist</li>
                                         </>
                                     )}
 

@@ -28,7 +28,8 @@ export function Listings() {
         apolloClient.query({
             query: getListings()
           })
-          .then(result => dispatch(addListings(result.data.listings)))
+          .then(result => {
+            dispatch(addListings(result.data.listings))})
           .catch(error => {
             return
           })

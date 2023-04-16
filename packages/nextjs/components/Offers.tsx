@@ -16,6 +16,8 @@ import { getTargetNetwork } from "~~/utils/scaffold-eth";
 import ExtendOfferDeadline from "./forms/ExtendOfferDeadline";
 import CreateOffer from "./forms/CreateOffer";
 import Link from "next/link";
+import { useDispatch, useSelector } from "react-redux";
+import { addOffers, removeOffer, selectOffers } from "~~/store/offers";
 
 export type OfferParams = {
     id: string;
@@ -33,12 +35,13 @@ const Offer = ({offer, canAccept}: OfferProps) => {
     const {address, isConnected} = useAccount()
 
     const [extendDeadline, setExtendDeadlne] = useState(false)
+    const dispatch = useDispatch()
 
     const toggleExtendDeadline = () => {
         setExtendDeadlne(current => !current)
     }
 
-    const {writeAsync: removeOffer, isLoading: isRemoving} = useScaffoldContractWrite({
+    const {writeAsync: removeItemOffer, isLoading: isRemoving} = useScaffoldContractWrite({
         contractName: "Unit",
         functionName: "removeOffer",
         args: [offer.nft, offer.tokenId]
@@ -56,6 +59,15 @@ const Offer = ({offer, canAccept}: OfferProps) => {
         chainId: getTargetNetwork().id,
         cacheTime: 30_000
     })
+
+    const handleRemoveOffer = async () => {
+        try {
+            await removeItemOffer()
+            dispatch(removeOffer({id: offer.id}))
+        } catch(error) {
+            return
+        }
+    }
 
     return (
         <div className="px-2 py-1 border-b-2">
@@ -79,7 +91,7 @@ const Offer = ({offer, canAccept}: OfferProps) => {
                              >
                              <Popover.Panel as="ul" className="absolute bg-white rounded-lg text-black min-w-[200px] border shadow-md font-normal">
                                              <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={toggleExtendDeadline}>Extend deadline</li>
-                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={removeOffer}>Remove</li>
+                                             <li className="px-4 py-2 border-b hover:bg-gray-200 cursor-pointer" onClick={handleRemoveOffer}>Remove</li>
  
                              </Popover.Panel>
                          </Transition>
@@ -99,19 +111,20 @@ interface Props {
     canAcceptOffer: boolean;
 }
 export default ({isOpen, toggleVisibility, listing, canAcceptOffer}: Props) => {
-const [offers, setOffers] = useState<OfferParams[]>()
-const [isLoading, setIsLoading] = useState(true)
-const [createOffer, setCreateOffer] = useState(false)
+    const [isLoading, setIsLoading] = useState(true)
+    const [createOffer, setCreateOffer] = useState(false)
+    const dispatch = useDispatch()
+    const offers = useSelector(selectOffers)
 
-const toggleCreateOffer = () => {
-    setCreateOffer(current => !current)
-}
+    const toggleCreateOffer = () => {
+        setCreateOffer(current => !current)
+    }
 
     useEffect(() => {
         apolloClient.query({
             query: getOffers(listing)
         }).then(result => {
-            setOffers(result.data.offers)
+            dispatch(addOffers(result.data.offers))
         }).catch(error => {
             console.error(error)
             return
