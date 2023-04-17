@@ -1,13 +1,11 @@
 import { Transition, Dialog, Switch } from "@headlessui/react";
 import { XCircleIcon } from "@heroicons/react/24/outline";
-import { Fragment, useState, useCallback, useEffect} from "react";
+import { Fragment, useState, useCallback} from "react";
 import { InputBase } from "../scaffold-eth";
 import { BigNumber, ethers } from "ethers";
 import DeadlineInput from "./DeadlineInput";
 import { useDeployedContractInfo, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
 import { useContractWrite, erc721ABI, useContractRead, useProvider } from "wagmi";
-import deployedContracts from "~~/generated/hardhat_contracts"
-import { getTargetNetwork, notification } from "~~/utils/scaffold-eth";
 import { useTransactor } from "~~/hooks/scaffold-eth";
 import { useDispatch } from "react-redux";
 import { addListing } from "~~/store/listings";
