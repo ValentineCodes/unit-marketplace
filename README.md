@@ -20,7 +20,7 @@ yarn
 ### Run unit tests:
 
 ```shell
-yarn hardhat:test
+yarn test
 ```
 
 ### Deploy contracts:
