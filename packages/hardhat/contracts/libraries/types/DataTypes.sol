@@ -18,4 +18,10 @@ library DataTypes {
     bool auction;
     uint256 deadline;
   }
+
+  struct Signature {
+    bytes32 r;
+    bytes32 s;
+    uint8 v;
+  }
 }

@@ -45,6 +45,7 @@ library ListLogic {
 
   function listItem(
     mapping(address => mapping(uint256 => DataTypes.Listing)) storage s_listings,
+    address owner,
     address nft,
     uint256 tokenId,
     address token,
@@ -56,13 +57,13 @@ library ListLogic {
 
     IERC721 _nft = IERC721(nft);
 
-    if (_nft.ownerOf(tokenId) != msg.sender) revert Errors.Unit__NotOwner();
+    if (_nft.ownerOf(tokenId) != owner) revert Errors.Unit__NotOwner();
     if (_nft.getApproved(tokenId) != address(this)) revert Errors.Unit__NotApprovedToSpendNFT();
 
     uint256 _deadline = deadline > 0 ? block.timestamp + deadline : 0;
 
     s_listings[nft][tokenId] = DataTypes.Listing({
-      seller: msg.sender,
+      seller: owner,
       nft: nft,
       tokenId: tokenId,
       token: token,
@@ -71,7 +72,7 @@ library ListLogic {
       deadline: _deadline
     });
 
-    emit ItemListed(msg.sender, nft, tokenId, token, price, auction, _deadline);
+    emit ItemListed(owner, nft, tokenId, token, price, auction, _deadline);
   }
 
   function unlistItem(

@@ -256,6 +256,137 @@ import { DataTypes } from "../../typechain-types/contracts/Unit";
         });
       });
 
+      describe("💬listItemWithPermit", () => {
+        it("lists item using owner signature", async () => {
+          console.log("Approving Unit to spend OGRE🐸...");
+          await ogre.approve(unit.address, 0);
+          console.log("Approved✅");
+          console.log("-------------------------------");
+
+          const item = {
+            nft: ogre.address,
+            tokenId: 0,
+            price: ONE_ETH,
+            deadline: 3600,
+          };
+
+          console.log("Signing message...");
+          const hash = await unit.getListTxHash(item.nft, item.tokenId, item.price, item.deadline);
+          const arrayified = ethers.utils.arrayify(hash);
+
+          const signature = await Ugochukwu.signMessage(arrayified);
+          const splitSignature = ethers.utils.splitSignature(signature);
+
+          console.log("Listing item...");
+          console.log("Params: ", {
+            ...item,
+            price: formatCurrency(item.price, "ETH🔷"),
+            deadline: item.deadline + " seconds",
+          });
+          await unit
+            .connect(Valentine)
+            .listItemWithPermit(item.nft, item.tokenId, item.price, item.deadline, splitSignature);
+
+          const blockTimestamp: number = await getBlockTimestamp();
+
+          const listing: DataTypes.ListingStructOutput = await unit.getListing(ogre.address, 0);
+          console.log("------------------------------------");
+          console.log("Item listed✅");
+          console.log({
+            seller: listing.seller,
+            nft: listing.nft,
+            tokenId: 0,
+            token: listing.token,
+            price: formatCurrency(listing.price, "ETH🔷"),
+            auction: listing.auction,
+            deadline: formatDate(listing.deadline.toNumber()),
+          });
+
+          expect(listing.seller).to.eq(Ugochukwu.address);
+          expect(listing.nft).to.eq(ogre.address);
+          expect(listing.tokenId).to.eq(0);
+          expect(listing.token).to.eq(ETH_ADDRESS);
+          expect(listing.price).to.eq(ONE_ETH);
+          expect(listing.auction).to.eq(false);
+          expect(listing.deadline.toString()).to.eq((blockTimestamp + 3600).toString());
+        });
+      });
+
+      describe("💬listItemWithTokenWithPermit", () => {
+        it("lists item with token using owner signature", async () => {
+          console.log("Approving Unit to spend OGRE🐸...");
+          await ogre.approve(unit.address, 0);
+          console.log("Approved✅");
+          console.log("---------------------------------");
+          const item = {
+            nft: ogre.address,
+            tokenId: 0,
+            token: dai.address,
+            price: ONE_ETH,
+            auction: true,
+            deadline: 3600,
+          };
+
+          console.log("Signing message...");
+          const hash = await unit.getListWithTokenTxHash(
+            item.nft,
+            item.tokenId,
+            item.token,
+            item.price,
+            item.auction,
+            item.deadline,
+          );
+          const arrayified = ethers.utils.arrayify(hash);
+
+          const signature = await Ugochukwu.signMessage(arrayified);
+          const splitSignature = ethers.utils.splitSignature(signature);
+
+          console.log("Listing item...");
+          console.log("Params: ", {
+            ...item,
+            token: item.token,
+            price: formatCurrency(item.price, "DAI🔶"),
+            deadline: item.deadline + " seconds",
+          });
+
+          await unit
+            .connect(Valentine)
+            .listItemWithTokenWithPermit(
+              item.nft,
+              item.tokenId,
+              item.token,
+              item.price,
+              item.auction,
+              item.deadline,
+              splitSignature,
+            );
+
+          console.log("------------------------------------");
+          console.log("Item listed✅");
+
+          const blockTimestamp: number = await getBlockTimestamp();
+
+          const listing = await unit.getListing(ogre.address, 0);
+          console.log({
+            seller: listing.seller,
+            nft: listing.nft,
+            tokenId: 0,
+            token: listing.token,
+            price: formatCurrency(listing.price, "DAI🔶"),
+            auction: listing.auction,
+            deadline: formatDate(listing.deadline.toNumber()),
+          });
+
+          expect(listing.seller).to.eq(Ugochukwu.address);
+          expect(listing.nft).to.eq(ogre.address);
+          expect(listing.tokenId).to.eq(0);
+          expect(listing.token).to.eq(dai.address);
+          expect(listing.price).to.eq(ONE_ETH);
+          expect(listing.auction).to.eq(true);
+          expect(listing.deadline.toString()).to.eq((blockTimestamp + 3600).toString());
+        });
+      });
+
       /**
        * @test
        */

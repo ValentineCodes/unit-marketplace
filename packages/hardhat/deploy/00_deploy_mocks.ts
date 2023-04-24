@@ -6,21 +6,21 @@ const deployMocks: DeployFunction = async () => {
   const { deploy, log } = deployments;
   const { tokenHolder } = await getNamedAccounts();
 
-  // if (developmentChains.includes(network.name)) {
-  log("Deploying Mocks...");
+  if (developmentChains.includes(network.name)) {
+    log("Deploying Mocks...");
 
-  await deploy("DAI", {
-    from: tokenHolder,
-    log: true,
-  });
+    await deploy("DAI", {
+      from: tokenHolder,
+      log: true,
+    });
 
-  await deploy("Ogre", {
-    from: tokenHolder,
-    log: true,
-  });
+    await deploy("Ogre", {
+      from: tokenHolder,
+      log: true,
+    });
 
-  log("Mocks Deployed!✅\n");
-  // }
+    log("Mocks Deployed!✅\n");
+  }
 };
 
 export default deployMocks;

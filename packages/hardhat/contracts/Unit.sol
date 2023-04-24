@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 import {IUnit} from "./interfaces/IUnit.sol";
 import {Errors} from "./interfaces/Errors.sol";
@@ -14,6 +15,8 @@ import {OfferLogic} from "./libraries/logic/OfferLogic.sol";
 import {WithdrawLogic} from "./libraries/logic/WithdrawLogic.sol";
 
 contract Unit is IUnit, Ownable, Errors {
+  using ECDSA for bytes32;
+
   address private constant ETH = address(0);
 
   mapping(address => mapping(uint256 => DataTypes.Listing)) private s_listings; // nft => token id => DataTypes.Listing
@@ -49,6 +52,41 @@ contract Unit is IUnit, Ownable, Errors {
   // TO-DO: Batch Listing and Unlisting
 
   // Zero deadline => No deadline
+
+  function listItemWithPermit(
+    address nft,
+    uint256 tokenId,
+    uint256 price,
+    uint256 deadline,
+    DataTypes.Signature calldata sig
+  ) external override isNotListed(nft, tokenId) {
+    if (nft == address(0)) revert Unit__ZeroAddress();
+
+    bytes32 hash = getListTxHash(nft, tokenId, price, deadline);
+
+    address signer = hash.toEthSignedMessageHash().recover(sig.v, sig.r, sig.s);
+
+    ListLogic.listItem(s_listings, signer, nft, tokenId, ETH, price, false, deadline);
+  }
+
+  function listItemWithTokenWithPermit(
+    address nft,
+    uint256 tokenId,
+    address token,
+    uint256 price,
+    bool auction,
+    uint256 deadline,
+    DataTypes.Signature calldata sig
+  ) external override isNotListed(nft, tokenId) {
+    if (nft == address(0) || token == address(0)) revert Unit__ZeroAddress();
+
+    bytes32 hash = getListWithTokenTxHash(nft, tokenId, token, price, auction, deadline);
+
+    address signer = hash.toEthSignedMessageHash().recover(sig.v, sig.r, sig.s);
+
+    ListLogic.listItem(s_listings, signer, nft, tokenId, token, price, auction, deadline);
+  }
+
   function listItem(
     address nft,
     uint256 tokenId,
@@ -57,7 +95,7 @@ contract Unit is IUnit, Ownable, Errors {
   ) external override isNotListed(nft, tokenId) {
     if (nft == address(0)) revert Unit__ZeroAddress();
 
-    ListLogic.listItem(s_listings, nft, tokenId, ETH, price, false, deadline);
+    ListLogic.listItem(s_listings, msg.sender, nft, tokenId, ETH, price, false, deadline);
   }
 
   function listItemWithToken(
@@ -70,7 +108,7 @@ contract Unit is IUnit, Ownable, Errors {
   ) external override isNotListed(nft, tokenId) {
     if (nft == address(0) || token == address(0)) revert Unit__ZeroAddress();
 
-    ListLogic.listItem(s_listings, nft, tokenId, token, price, auction, deadline);
+    ListLogic.listItem(s_listings, msg.sender, nft, tokenId, token, price, auction, deadline);
   }
 
   function unlistItem(
@@ -182,5 +220,20 @@ contract Unit is IUnit, Ownable, Errors {
     uint256 tokenId
   ) external view override returns (DataTypes.Offer memory) {
     return s_offers[offerOwner][nft][tokenId];
+  }
+
+  function getListTxHash(address nft, uint256 tokenId, uint256 price, uint256 deadline) public pure returns (bytes32) {
+    return keccak256(abi.encodePacked(nft, tokenId, price, deadline));
+  }
+
+  function getListWithTokenTxHash(
+    address nft,
+    uint256 tokenId,
+    address token,
+    uint256 price,
+    bool auction,
+    uint256 deadline
+  ) public pure returns (bytes32) {
+    return keccak256(abi.encodePacked(nft, tokenId, token, price, auction, deadline));
   }
 }

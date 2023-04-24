@@ -172,6 +172,40 @@ interface IUnit {
   /// @param amount Amount of fees
   event FeesWithdrawn(address indexed feeOwner, address indexed token, uint256 indexed amount);
 
+  /// @notice Lists item with ETH price as signed by item owner
+  /// @dev Unit must be approved to spend NFT
+  /// @param nft Address of NFT to be listed
+  /// @param tokenId Token id of NFT to be listed
+  /// @param price ETH price of listing
+  /// @param deadline How many seconds till listing expires. if deadline is 0, deadline is infinite
+  /// @param sig Signature of NFT owner
+  function listItemWithPermit(
+    address nft,
+    uint256 tokenId,
+    uint256 price,
+    uint256 deadline,
+    DataTypes.Signature calldata sig
+  ) external;
+
+  /// @notice Lists item with token price as signed by item owner
+  /// @dev Unit must be approved to spend NFT
+  /// @param nft Address of NFT to be listed
+  /// @param tokenId Token id of NFT to be listed
+  /// @param token Address of price token
+  /// @param price Token price of listing
+  /// @param auction Toggle between fixed and auction listing
+  /// @param deadline How many seconds till listing expires. if deadline is 0, deadline is infinite
+  /// @param sig Signature of NFT owner
+  function listItemWithTokenWithPermit(
+    address nft,
+    uint256 tokenId,
+    address token,
+    uint256 price,
+    bool auction,
+    uint256 deadline,
+    DataTypes.Signature calldata sig
+  ) external;
+
   /// @notice Lists item with ETH price
   /// @dev Unit must be approved to spend NFT
   /// @param nft Address of NFT to be listed
