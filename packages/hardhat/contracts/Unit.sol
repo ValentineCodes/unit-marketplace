@@ -112,6 +112,21 @@ contract Unit is IUnit, Ownable, Errors {
     BuyLogic.buyItemWithToken(s_listings, s_earnings, s_fees, signer, nft, tokenId, token, amount);
   }
 
+  function acceptOfferUsingPermit(
+    address offerOwner,
+    address nft,
+    uint256 tokenId,
+    DataTypes.Signature calldata sig
+  ) external override {
+    bytes32 hash = getAcceptOfferTxHash(offerOwner, nft, tokenId);
+
+    address signer = recover(hash, sig);
+
+    if (IERC721(nft).ownerOf(tokenId) != signer) revert Unit__NotOwner();
+
+    OfferLogic.acceptOffer(s_listings, s_offers, s_earnings, s_fees, offerOwner, nft, tokenId);
+  }
+
   function listItem(
     address nft,
     uint256 tokenId,
@@ -273,6 +288,10 @@ contract Unit is IUnit, Ownable, Errors {
     uint256 amount
   ) public pure returns (bytes32) {
     return keccak256(abi.encodePacked(nft, tokenId, token, amount));
+  }
+
+  function getAcceptOfferTxHash(address offerOwner, address nft, uint256 tokenId) public pure returns (bytes32) {
+    return keccak256(abi.encodePacked(offerOwner, nft, tokenId));
   }
 
   function recover(bytes32 hash, DataTypes.Signature calldata sig) private pure returns (address) {

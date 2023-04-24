@@ -839,6 +839,54 @@ import { DataTypes } from "../../typechain-types/contracts/Unit";
         });
       });
 
+      describe("💬acceptOfferUsingPermit", () => {
+        it("accepts offer using owner signature", async () => {
+          console.log("Offer created✅");
+          console.log("Offer: ", {
+            owner: Orga.address,
+            amount: formatCurrency(offerAmount, "DAI🔶"),
+          });
+          await createOffer(ogre.address, 0, dai.address, offerAmount, 1200);
+
+          const prevUnitDaiBal: BigNumber = await dai.balanceOf(unit.address);
+          const prevUnitFees: BigNumber = await unit.getFees(dai.address);
+          const prevSellerEarnings: BigNumber = await unit.getEarnings(Ugochukwu.address, dai.address);
+          const prevOgreOwner = await ogre.ownerOf(0);
+
+          console.log("-----------------------------------------");
+          console.log("Prev Unit Fees: ", formatCurrency(prevUnitFees, "DAI🔶"));
+          console.log("Prev Seller Earnings: ", formatCurrency(prevSellerEarnings, "DAI🔶"));
+          console.log("Prev Ogre Owner: ", prevOgreOwner);
+          console.log("-----------------------------------------");
+
+          console.log("Signing message...");
+          const hash = await unit.getAcceptOfferTxHash(Orga.address, ogre.address, 0);
+          const arrayified = ethers.utils.arrayify(hash);
+
+          const signature = await Ugochukwu.signMessage(arrayified);
+          const splitSignature = ethers.utils.splitSignature(signature);
+
+          await unit.connect(Valentine).acceptOfferUsingPermit(Orga.address, ogre.address, 0, splitSignature);
+          console.log("Offer accepted✅");
+
+          const listing: DataTypes.ListingStructOutput = await unit.getListing(ogre.address, 0);
+          const currentUnitDaiBal: BigNumber = await dai.balanceOf(unit.address);
+          const currentUnitFees: BigNumber = await unit.getFees(dai.address);
+          const currentSellerEarnings: BigNumber = await unit.getEarnings(Ugochukwu.address, dai.address);
+          const currentOgreOwner = await ogre.ownerOf(0);
+
+          console.log("Current Unit Fees(1%): ", formatCurrency(currentUnitFees, "DAI🔶"));
+          console.log("Current Seller Earnings: ", formatCurrency(currentSellerEarnings, "DAI🔶"));
+          console.log("Current Ogre Owner: ", currentOgreOwner);
+
+          expect(listing.price).to.eq(0);
+          expect(currentOgreOwner).to.eq(Orga.address);
+          expect(currentUnitDaiBal).to.eq(prevUnitDaiBal.add(offerAmount));
+          expect(currentUnitFees).to.eq(prevUnitFees.add(offerAmount.div(100)));
+          expect(currentSellerEarnings).to.eq(prevSellerEarnings.add(offerAmount.mul(99).div(100)));
+        });
+      });
+
       /**
        * @test
        */

@@ -228,6 +228,19 @@ interface IUnit {
     DataTypes.Signature calldata sig
   ) external;
 
+  /// @notice Accepts an offer on an item using oermit
+  /// @dev Can only be called by item owner
+  /// @param offerOwner Address of offer owner
+  /// @param nft Address of NFT offer was made on
+  /// @param tokenId Token id of NFT offer was made on
+  /// @param sig Signature of item owner
+  function acceptOfferUsingPermit(
+    address offerOwner,
+    address nft,
+    uint256 tokenId,
+    DataTypes.Signature calldata sig
+  ) external;
+
   /// @notice Lists item with ETH price
   /// @dev Unit must be approved to spend NFT
   /// @param nft Address of NFT to be listed
