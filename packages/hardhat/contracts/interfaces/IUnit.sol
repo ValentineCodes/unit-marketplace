@@ -179,7 +179,7 @@ interface IUnit {
   /// @param price ETH price of listing
   /// @param deadline How many seconds till listing expires. if deadline is 0, deadline is infinite
   /// @param sig Signature of NFT owner
-  function listItemWithPermit(
+  function listItemUsingPermit(
     address nft,
     uint256 tokenId,
     uint256 price,
@@ -196,13 +196,35 @@ interface IUnit {
   /// @param auction Toggle between fixed and auction listing
   /// @param deadline How many seconds till listing expires. if deadline is 0, deadline is infinite
   /// @param sig Signature of NFT owner
-  function listItemWithTokenWithPermit(
+  function listItemWithTokenUsingPermit(
     address nft,
     uint256 tokenId,
     address token,
     uint256 price,
     bool auction,
     uint256 deadline,
+    DataTypes.Signature calldata sig
+  ) external;
+
+  /// @notice Buys an item with ETH price as signed buy buyer
+  /// @dev Only buys item greater than or equal to 1ETH
+  /// @param nft Address of NFT to be bought
+  /// @param tokenId Token id of NFT to be bought
+  /// @param sig Signature of buyer
+  function buyUsingPermit(address nft, uint256 tokenId, DataTypes.Signature calldata sig) external payable;
+
+  /// @notice Buys an item with token price
+  /// @dev Unit must be approved to spend tokens
+  /// @param nft Address of NFT to be bought
+  /// @param tokenId Token id of NFT to be bought
+  /// @param token Address of item price currency
+  /// @param amount Item price
+  /// @param sig Signature of buyer
+  function buyWithTokenUsingPermit(
+    address nft,
+    uint256 tokenId,
+    address token,
+    uint256 amount,
     DataTypes.Signature calldata sig
   ) external;
 

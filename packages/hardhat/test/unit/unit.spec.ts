@@ -256,7 +256,7 @@ import { DataTypes } from "../../typechain-types/contracts/Unit";
         });
       });
 
-      describe("💬listItemWithPermit", () => {
+      describe("💬listItemUsingPermit", () => {
         it("lists item using owner signature", async () => {
           console.log("Approving Unit to spend OGRE🐸...");
           await ogre.approve(unit.address, 0);
@@ -285,7 +285,7 @@ import { DataTypes } from "../../typechain-types/contracts/Unit";
           });
           await unit
             .connect(Valentine)
-            .listItemWithPermit(item.nft, item.tokenId, item.price, item.deadline, splitSignature);
+            .listItemUsingPermit(item.nft, item.tokenId, item.price, item.deadline, splitSignature);
 
           const blockTimestamp: number = await getBlockTimestamp();
 
@@ -312,7 +312,7 @@ import { DataTypes } from "../../typechain-types/contracts/Unit";
         });
       });
 
-      describe("💬listItemWithTokenWithPermit", () => {
+      describe("💬listItemWithTokenUsingPermit", () => {
         it("lists item with token using owner signature", async () => {
           console.log("Approving Unit to spend OGRE🐸...");
           await ogre.approve(unit.address, 0);
@@ -351,7 +351,7 @@ import { DataTypes } from "../../typechain-types/contracts/Unit";
 
           await unit
             .connect(Valentine)
-            .listItemWithTokenWithPermit(
+            .listItemWithTokenUsingPermit(
               item.nft,
               item.tokenId,
               item.token,
@@ -1169,6 +1169,109 @@ import { DataTypes } from "../../typechain-types/contracts/Unit";
           await expect(
             unit.connect(Orga).buyItemWithToken(ogre.address, 0, dai.address, ONE_ETH),
           ).to.revertedWithCustomError(unit, "Unit__NotApprovedToSpendToken");
+        });
+      });
+
+      describe("💬buyUsingPermit", () => {
+        it("buys item using buyer signature", async () => {
+          await listItem(ogre.address, 0, ONE_ETH, 3600);
+
+          console.log("Signing message...");
+          const hash = await unit.getBuyTxHash(ogre.address, 0, ONE_ETH);
+          const arrayified = ethers.utils.arrayify(hash);
+
+          const signature = await Orga.signMessage(arrayified);
+          const splitSignature = ethers.utils.splitSignature(signature);
+
+          console.log("-------------------------------------");
+
+          const prevUnitFees: BigNumber = await unit.getFees(ETH_ADDRESS);
+          const prevSellerEarnings: BigNumber = await unit.getEarnings(Ugochukwu.address, ETH_ADDRESS);
+
+          console.log("Prev Ogre owner🐸: ", await ogre.ownerOf(0));
+          console.log("Prev Unit Fees: ", formatCurrency(prevUnitFees, "ETH🔷"));
+          console.log("Prev Seller Earnings: ", formatCurrency(prevSellerEarnings, "ETH🔷"));
+          console.log("----------------------------------------");
+
+          console.log("Buying item...");
+          console.log("Buyer:", Orga.address);
+
+          await unit.connect(Orga).buyUsingPermit(ogre.address, 0, splitSignature, {
+            value: ONE_ETH,
+          });
+
+          console.log("-----------------------------------------");
+          console.log("Item bought✅");
+
+          const listing = await unit.getListing(ogre.address, 0);
+          const currentUnitFees: BigNumber = await unit.getFees(ETH_ADDRESS);
+          const currentSellerEarnings: BigNumber = await unit.getEarnings(Ugochukwu.address, ETH_ADDRESS);
+
+          console.log("Current Ogre owner🐸: ", await ogre.ownerOf(0));
+          console.log("Current Unit Fees(1%): ", formatCurrency(currentUnitFees, "ETH🔷"));
+          console.log("Current Seller Earnings: ", formatCurrency(currentSellerEarnings, "ETH🔷"));
+
+          expect(listing.price).to.eq(0);
+          expect(await ogre.ownerOf(0)).to.eq(Orga.address);
+
+          const expectedEarnings: BigNumber = ONE_ETH.mul(99).div(100); // with 1% fee off
+
+          expect(currentSellerEarnings).to.eq(prevSellerEarnings.add(expectedEarnings));
+          expect(currentUnitFees).to.eq(prevUnitFees.add(ONE_ETH.div(100))); // 1% fee
+        });
+      });
+
+      describe("💬buyWithTokenUsingPermit", () => {
+        it("buys item with token using buyer signature", async () => {
+          await listItemWithToken(ogre.address, 0, dai.address, ONE_ETH, false, 3600);
+
+          console.log("Signing message...");
+          const hash = await unit.getBuyWithTokenTxHash(ogre.address, 0, dai.address, ONE_ETH);
+          const arrayified = ethers.utils.arrayify(hash);
+
+          const signature = await Orga.signMessage(arrayified);
+          const splitSignature = ethers.utils.splitSignature(signature);
+
+          console.log("-------------------------------------");
+
+          const prevUnitDaiBal: BigNumber = await dai.balanceOf(unit.address);
+          const prevUnitFees: BigNumber = await unit.getFees(ETH_ADDRESS);
+          const prevSellerEarnings: BigNumber = await unit.getEarnings(Ugochukwu.address, ETH_ADDRESS);
+
+          console.log("Prev Ogre owner🐸: ", await ogre.ownerOf(0));
+          console.log("Prev Unit Fees: ", formatCurrency(prevUnitFees, "DAI🔶"));
+          console.log("Prev Seller Earnings: ", formatCurrency(prevSellerEarnings, "DAI🔶"));
+          console.log("----------------------------------------");
+
+          await dai.transfer(Orga.address, ONE_ETH);
+
+          await dai.connect(Orga).approve(unit.address, ONE_ETH);
+
+          console.log("Buying item...");
+          console.log("Buyer:", Orga.address);
+
+          await unit.connect(Valentine).buyWithTokenUsingPermit(ogre.address, 0, dai.address, ONE_ETH, splitSignature);
+
+          console.log("-----------------------------------------");
+          console.log("Item bought✅");
+
+          const listing: DataTypes.ListingStructOutput = await unit.getListing(ogre.address, 0);
+          const currentUnitDaiBal: BigNumber = await dai.balanceOf(unit.address);
+          const currentUnitFees: BigNumber = await unit.getFees(dai.address);
+          const currentSellerEarnings: BigNumber = await unit.getEarnings(Ugochukwu.address, dai.address);
+
+          console.log("Current Ogre owner🐸: ", await ogre.ownerOf(0));
+          console.log("Current Unit Fees(1%): ", formatCurrency(currentUnitFees, "DAI🔶"));
+          console.log("Current Seller Earnings: ", formatCurrency(currentSellerEarnings, "DAI🔶"));
+
+          expect(listing.price).to.eq(0);
+          expect(await ogre.ownerOf(0)).to.eq(Orga.address);
+          expect(currentUnitDaiBal).to.eq(prevUnitDaiBal.add(ONE_ETH));
+
+          const expectedEarnings: BigNumber = ONE_ETH.mul(99).div(100); // with 1% fee off
+
+          expect(currentSellerEarnings).to.eq(prevSellerEarnings.add(expectedEarnings));
+          expect(currentUnitFees).to.eq(prevUnitFees.add(ONE_ETH.div(100))); // 1% fee
         });
       });
 

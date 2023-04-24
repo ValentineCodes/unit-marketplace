@@ -53,7 +53,7 @@ contract Unit is IUnit, Ownable, Errors {
 
   // Zero deadline => No deadline
 
-  function listItemWithPermit(
+  function listItemUsingPermit(
     address nft,
     uint256 tokenId,
     uint256 price,
@@ -64,12 +64,12 @@ contract Unit is IUnit, Ownable, Errors {
 
     bytes32 hash = getListTxHash(nft, tokenId, price, deadline);
 
-    address signer = hash.toEthSignedMessageHash().recover(sig.v, sig.r, sig.s);
+    address signer = recover(hash, sig);
 
     ListLogic.listItem(s_listings, signer, nft, tokenId, ETH, price, false, deadline);
   }
 
-  function listItemWithTokenWithPermit(
+  function listItemWithTokenUsingPermit(
     address nft,
     uint256 tokenId,
     address token,
@@ -82,9 +82,34 @@ contract Unit is IUnit, Ownable, Errors {
 
     bytes32 hash = getListWithTokenTxHash(nft, tokenId, token, price, auction, deadline);
 
-    address signer = hash.toEthSignedMessageHash().recover(sig.v, sig.r, sig.s);
+    address signer = recover(hash, sig);
 
     ListLogic.listItem(s_listings, signer, nft, tokenId, token, price, auction, deadline);
+  }
+
+  function buyUsingPermit(address nft, uint256 tokenId, DataTypes.Signature calldata sig) external payable override {
+    // Allow free purchase for items one eth or more
+    if (s_listings[nft][tokenId].price < 1e18) revert Unit__ItemPriceLessThanOneEth();
+
+    bytes32 hash = getBuyTxHash(nft, tokenId, msg.value);
+
+    address signer = recover(hash, sig);
+
+    BuyLogic.buyItem(s_listings, s_earnings, s_fees, signer, nft, tokenId, msg.value);
+  }
+
+  function buyWithTokenUsingPermit(
+    address nft,
+    uint256 tokenId,
+    address token,
+    uint256 amount,
+    DataTypes.Signature calldata sig
+  ) external override {
+    bytes32 hash = getBuyWithTokenTxHash(nft, tokenId, token, amount);
+
+    address signer = recover(hash, sig);
+
+    BuyLogic.buyItemWithToken(s_listings, s_earnings, s_fees, signer, nft, tokenId, token, amount);
   }
 
   function listItem(
@@ -159,11 +184,11 @@ contract Unit is IUnit, Ownable, Errors {
   }
 
   function buyItem(address nft, uint256 tokenId) external payable override {
-    BuyLogic.buyItem(s_listings, s_earnings, s_fees, nft, tokenId, msg.value);
+    BuyLogic.buyItem(s_listings, s_earnings, s_fees, msg.sender, nft, tokenId, msg.value);
   }
 
   function buyItemWithToken(address nft, uint256 tokenId, address token, uint256 amount) external override {
-    BuyLogic.buyItemWithToken(s_listings, s_earnings, s_fees, nft, tokenId, token, amount);
+    BuyLogic.buyItemWithToken(s_listings, s_earnings, s_fees, msg.sender, nft, tokenId, token, amount);
   }
 
   function createOffer(
@@ -235,5 +260,22 @@ contract Unit is IUnit, Ownable, Errors {
     uint256 deadline
   ) public pure returns (bytes32) {
     return keccak256(abi.encodePacked(nft, tokenId, token, price, auction, deadline));
+  }
+
+  function getBuyTxHash(address nft, uint256 tokenId, uint256 amount) public pure returns (bytes32) {
+    return keccak256(abi.encodePacked(nft, tokenId, amount));
+  }
+
+  function getBuyWithTokenTxHash(
+    address nft,
+    uint256 tokenId,
+    address token,
+    uint256 amount
+  ) public pure returns (bytes32) {
+    return keccak256(abi.encodePacked(nft, tokenId, token, amount));
+  }
+
+  function recover(bytes32 hash, DataTypes.Signature calldata sig) private pure returns (address) {
+    return hash.toEthSignedMessageHash().recover(sig.v, sig.r, sig.s);
   }
 }

@@ -17,6 +17,7 @@ library BuyLogic {
     mapping(address => mapping(uint256 => DataTypes.Listing)) storage s_listings,
     mapping(address => mapping(address => uint256)) storage s_earnings,
     mapping(address => uint256) storage s_fees,
+    address buyer,
     address nft,
     uint256 tokenId,
     uint256 amount
@@ -31,23 +32,24 @@ library BuyLogic {
     // Item has deadline and it has been reached
     if (listing.deadline > 0 && block.timestamp >= listing.deadline) revert Errors.Unit__ListingExpired();
 
-    if (listing.seller == msg.sender) revert Errors.Unit__CannotBuyOwnNFT();
+    if (listing.seller == buyer) revert Errors.Unit__CannotBuyOwnNFT();
 
     delete s_listings[nft][tokenId];
 
-    IERC721(nft).safeTransferFrom(listing.seller, msg.sender, tokenId);
+    IERC721(nft).safeTransferFrom(listing.seller, buyer, tokenId);
 
     (uint256 earnings, uint256 fee) = Helpers.extractFee(amount);
     s_earnings[listing.seller][ETH] += earnings;
     s_fees[ETH] += fee;
 
-    emit ItemBought(msg.sender, nft, tokenId, ETH, amount);
+    emit ItemBought(buyer, nft, tokenId, ETH, amount);
   }
 
   function buyItemWithToken(
     mapping(address => mapping(uint256 => DataTypes.Listing)) storage s_listings,
     mapping(address => mapping(address => uint256)) storage s_earnings,
     mapping(address => uint256) storage s_fees,
+    address buyer,
     address nft,
     uint256 tokenId,
     address token,
@@ -64,21 +66,21 @@ library BuyLogic {
     // Item has deadline and it has been reached
     if (listing.deadline > 0 && block.timestamp >= listing.deadline) revert Errors.Unit__ListingExpired();
 
-    if (listing.seller == msg.sender) revert Errors.Unit__CannotBuyOwnNFT();
+    if (listing.seller == buyer) revert Errors.Unit__CannotBuyOwnNFT();
 
-    if (IERC20(token).allowance(msg.sender, address(this)) < amount) revert Errors.Unit__NotApprovedToSpendToken(token);
+    if (IERC20(token).allowance(buyer, address(this)) < amount) revert Errors.Unit__NotApprovedToSpendToken(token);
 
     delete s_listings[nft][tokenId];
 
-    IERC721(nft).safeTransferFrom(listing.seller, msg.sender, tokenId);
+    IERC721(nft).safeTransferFrom(listing.seller, buyer, tokenId);
 
-    if (IERC20(token).transferFrom(msg.sender, address(this), amount) == false)
+    if (IERC20(token).transferFrom(buyer, address(this), amount) == false)
       revert Errors.Unit__TokenTransferFailed(address(this), token, amount);
 
     (uint256 earnings, uint256 fee) = Helpers.extractFee(amount);
     s_earnings[listing.seller][token] += earnings;
     s_fees[token] += fee;
 
-    emit ItemBought(msg.sender, nft, tokenId, token, amount);
+    emit ItemBought(buyer, nft, tokenId, token, amount);
   }
 }

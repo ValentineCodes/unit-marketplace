@@ -29,4 +29,5 @@ interface Errors {
   error Unit__ZeroEarnings();
   error Unit__EthTransferFailed(address to, uint256 amount);
   error Unit__InsufficientFees(uint256 feeBalance, uint256 requestedAmount);
+  error Unit__ItemPriceLessThanOneEth();
 }
